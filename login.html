@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign in | AUREST</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body data-nav="">
+    <main class="auth login" id="main">
+      <div class="auth-card">
+        <a class="auth-logo" href="index.html" aria-label="AUREST home">AUREST</a>
+        <p class="tagline">Where Comfort Meets Care.</p>
+        <h1>Welcome Back</h1>
+        <p class="auth-sub">Sign in to your AUREST account</p>
+        <p class="notice" id="notice" role="status"></p>
+        <form id="login-form" novalidate>
+          <div class="form-error" id="form-error" role="alert"></div>
+          <div class="field">
+            <label for="identifier">Username or Email</label>
+            <input id="identifier" autocomplete="username" aria-describedby="identifier-error" />
+            <small class="error" id="identifier-error"></small>
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="pw-wrap">
+              <input
+                id="password"
+                type="password"
+                autocomplete="current-password"
+                aria-describedby="password-error"
+              /><button
+                type="button"
+                class="pw-toggle"
+                data-for="password"
+                aria-label="Show or hide password"
+              >
+                Show
+              </button>
+            </div>
+            <small class="error" id="password-error"></small>
+          </div>
+          <button class="btn block" type="submit">Login</button>
+        </form>
+        <p class="auth-links">
+          New here? <a href="register.html">Create an account</a><br /><a
+            class="back"
+            href="index.html"
+            >← Back to home</a
+          >
+        </p>
+        <p class="hint" style="text-align: center; margin-top: 14px">
+          Demo guest: <b>demo@aurest.com</b> / <b>demo1234</b><br />Demo admin:
+          <b>admin@aurest.com</b> / <b>admin1234</b>
+        </p>
+      </div>
+    </main>
+    <!-- Load shared data and helpers before the script for this page; script order matters. -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/finance.js"></script>
+    <script src="js/login.js"></script>
+  </body>
+</html>

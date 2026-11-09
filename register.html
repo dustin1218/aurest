@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create account | AUREST</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body data-nav="">
+    <main class="auth register" id="main">
+      <div class="auth-card">
+        <h1>Begin your AUREST journey</h1>
+        <p class="auth-sub">A little comfort starts here.</p>
+        <form id="register-form" novalidate>
+          <div class="form-error" id="form-error" role="alert"></div>
+          <div class="field">
+            <label for="fullname">Full name</label>
+            <input id="fullname" autocomplete="name" aria-describedby="fullname-error" />
+            <small class="error" id="fullname-error"></small>
+          </div>
+          <div class="field">
+            <label for="email">Email address</label>
+            <input id="email" type="email" autocomplete="email" aria-describedby="email-error" />
+            <small class="error" id="email-error"></small>
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="pw-wrap">
+              <input
+                id="password"
+                type="password"
+                autocomplete="new-password"
+                aria-describedby="password-hint password-error"
+              /><button
+                type="button"
+                class="pw-toggle"
+                data-for="password"
+                aria-label="Show or hide password"
+              >
+                Show
+              </button>
+            </div>
+            <small class="hint" id="password-hint">At least 8 characters.</small>
+            <small class="error" id="password-error"></small>
+          </div>
+          <button class="btn block" type="submit">Create Account</button>
+        </form>
+        <p class="auth-links">
+          Already have an account? <a href="login.html">Sign in</a><br /><a
+            class="back"
+            href="index.html"
+            >← Back to home</a
+          >
+        </p>
+      </div>
+    </main>
+    <!-- Load shared data and helpers before the script for this page; script order matters. -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/finance.js"></script>
+    <script src="js/register.js"></script>
+  </body>
+</html>
