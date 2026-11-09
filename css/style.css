@@ -217,6 +217,11 @@ h3 {
 .field textarea:focus {
   border-color: var(--green);
 }
+.field input.locked {
+  background: var(--cream);
+  color: var(--muted);
+  cursor: not-allowed;
+}
 .field input.invalid,
 .field select.invalid {
   border-color: var(--error);

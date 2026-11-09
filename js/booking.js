@@ -26,9 +26,6 @@ function initBooking(user, d, room) {
   fillSelect(el("children"), 0, MAX_CHILDREN);
 
   // Pre-fill: what was typed before (when coming back from the review page), otherwise the signed-in guest.
-  const [firstGuess, ...rest] = (user.name || "").trim().split(/\s+/);
-  el("first").value = d.first ?? firstGuess ?? "";
-  el("last").value = d.last ?? rest.join(" ");
   el("email").value = d.email ?? user.email ?? "";
   el("phone").value = d.phone ?? profileFor(user.email).phone ?? "";
   el("discount-guests").value = d.discountGuests || "";
@@ -42,6 +39,19 @@ function initBooking(user, d, room) {
     el("booking-form"),
     [room.id, d.checkin, d.checkout, d.adults, d.children].join(),
   );
+  // The booking name always comes from the account. Set after the draft restore so nothing can replace it.
+  const accountName = (profileFor(user.email).name || user.name || "").trim();
+  if (accountName) {
+    const [accountFirst, ...accountRest] = accountName.split(/\s+/);
+    el("first").value = accountFirst;
+    el("last").value = accountRest.join(" ");
+    [el("first"), el("last")].forEach((input) => {
+      input.readOnly = true;
+      input.classList.add("locked");
+      input.setAttribute("aria-describedby", "name-hint");
+    });
+    el("name-hint").hidden = false;
+  }
   el("checkin").min = today;
   el("checkout").min = el("checkin").value || today;
 
@@ -84,7 +94,9 @@ function initBooking(user, d, room) {
   const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const rules = {
     first: () => (el("first").value.trim() ? "" : "Please enter your first name."),
-    last: () => (el("last").value.trim() ? "" : "Please enter your last name."),
+    // A locked one-word account name has no last name, and the guest could not type one anyway.
+    last: () =>
+      el("last").value.trim() || el("last").readOnly ? "" : "Please enter your last name.",
     email: () =>
       !el("email").value.trim()
         ? "Please enter your email."
