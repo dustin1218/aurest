@@ -51,13 +51,18 @@ $("#cart-list").onclick = async (e) => {
     if (
       await confirmDialog({
         title: "Cancel reservation?",
-        message: `Cancellation charge: ${peso(q.fee)}. Refund to be processed by staff: ${peso(q.refund)}. This cancels your stay permanently.`,
+        message: `${id}, ${fmtDate(b.checkin)} – ${fmtDate(b.checkout)}. Cancellation charge: ${peso(q.fee)}. Refund to be processed by staff: ${peso(q.refund)}. This cancels your stay permanently.`,
         confirmText: "Cancel reservation",
         danger: true,
       })
     ) {
       cancelReservation(b);
       draw();
+      toast(
+        q.refund
+          ? `${id} cancelled. Staff will process your ${peso(q.refund)} refund.`
+          : `${id} cancelled.`,
+      );
     }
     return;
   }
@@ -84,7 +89,7 @@ $("#cart-list").onclick = async (e) => {
     );
     financeDialog(
       "Submit payment reference",
-      `<p>Amount remaining to submit: ${peso(remaining)}. Staff will verify the transfer; this form does not charge you.</p><label>Amount (₱)<input name="amount" type="number" min="0.01" max="${remaining}" step="0.01" value="${due.toFixed(2)}" required></label><label>Method<select name="method"><option>Bank transfer</option><option>GCash</option><option>Cash at front desk</option></select></label><label>Transfer / receipt reference<input name="reference" maxlength="100" required></label>`,
+      `<p>Amount remaining to submit: ${peso(remaining)}. Send it to: ${esc(hotelInfo.payTo)}. Staff will verify the transfer; this form does not charge you.</p><label>Amount (₱)<input name="amount" type="number" min="0.01" max="${remaining}" step="0.01" value="${due.toFixed(2)}" required></label><label>Method<select name="method"><option>Bank transfer</option><option>GCash</option><option>Cash at front desk</option></select></label><label>Transfer / receipt reference<input name="reference" maxlength="100" required></label>`,
       (d) => {
         const amount = Number(d.get("amount")),
           reference = d.get("reference").trim();
@@ -101,6 +106,7 @@ $("#cart-list").onclick = async (e) => {
           status: "Submitted",
         });
         draw();
+        toast("Reference submitted. Staff will verify your payment.");
       },
     );
     return;

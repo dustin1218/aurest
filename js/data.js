@@ -6,6 +6,7 @@ const hotelInfo = {
   phone: "+63 900 000 0000",
   email: "hello@aurest.example",
   hours: "Front desk open 24 hours",
+  payTo: "BDO 0000 0000 0000 or GCash 0900 000 0000 (AUREST Hotel, sample details)",
 };
 
 // Default rooms. Rooms the admin adds are saved separately in the browser.

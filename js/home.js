@@ -106,13 +106,17 @@ let expanded = false,
   applied = null;
 
 function drawRooms() {
-  let list = getRooms().filter((r) => r.guests >= +cap.value);
+  // After a date search, only offer rooms that are actually free for that stay.
+  let list = getRooms().filter(
+    (r) =>
+      r.guests >= +cap.value && (!applied || available(r.id, applied.checkin, applied.checkout)),
+  );
   if (sort.value === "low") list.sort((a, b) => a.price - b.price);
   if (sort.value === "high") list.sort((a, b) => b.price - a.price);
   const shown = expanded ? list : list.slice(0, FEATURED);
   gallery.innerHTML = shown.length
     ? shown.map(roomCard).join("")
-    : `<div class="empty"><h3>No rooms fit ${cap.value} guests</h3><p>Try fewer guests or clear your filters.</p><button class="btn" type="button" id="reset">Show all rooms</button></div>`;
+    : `<div class="empty"><h3>${applied ? "No rooms are free for that stay" : `No rooms fit ${cap.value} guests`}</h3><p>${applied ? "Try different dates or fewer guests." : "Try fewer guests or clear your filters."}</p><button class="btn" type="button" id="reset">Show all rooms</button></div>`;
   $("#count").textContent = shown.length
     ? `Showing ${shown.length} of ${plural(list.length, "room")}`
     : "";
@@ -161,32 +165,33 @@ $("#contact-info").innerHTML = [
   .join("");
 
 const cf = { name: $("#c-name"), email: $("#c-email"), message: $("#c-message") };
+const contactRules = {
+  name: () => (cf.name.value.trim().length >= 2 ? "" : "Please enter your name."),
+  email: () =>
+    !cf.email.value.trim()
+      ? "Please enter your email."
+      : /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cf.email.value.trim())
+        ? ""
+        : "Please enter a valid email address.",
+  message: () =>
+    cf.message.value.trim().length >= 10 ? "" : "Please write at least 10 characters.",
+};
 const checkContact = () =>
-  [
-    setError(cf.name, cf.name.value.trim().length >= 2 ? "" : "Please enter your name."),
-    setError(
-      cf.email,
-      !cf.email.value.trim()
-        ? "Please enter your email."
-        : /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cf.email.value.trim())
-          ? ""
-          : "Please enter a valid email address.",
-    ),
-    setError(
-      cf.message,
-      cf.message.value.trim().length >= 10 ? "" : "Please write at least 10 characters.",
-    ),
-  ].every(Boolean);
-Object.values(cf).forEach((i) =>
-  i.addEventListener("blur", () => {
-    if (i.value) checkContact();
+  Object.keys(contactRules)
+    .map((k) => setError(cf[k], contactRules[k]()))
+    .every(Boolean);
+// Check each field as the person leaves it, without flagging fields they have not reached.
+Object.keys(contactRules).forEach((k) =>
+  cf[k].addEventListener("blur", () => {
+    if (cf[k].value) setError(cf[k], contactRules[k]());
   }),
 );
+const contactDraft = keepFormOnRefresh($("#contact-form"));
 $("#contact-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const n = $("#contact-notice");
   n.textContent = "";
-  if (!checkContact()) return;
+  if (!checkContact()) return $(".invalid", e.target).focus();
   const msgs = store.get("aurest-messages", []);
   msgs.push({
     name: cf.name.value.trim(),
@@ -197,6 +202,7 @@ $("#contact-form").addEventListener("submit", (e) => {
   });
   store.set("aurest-messages", msgs);
   e.target.reset();
+  contactDraft.clear();
   n.textContent = "Thank you! Your message was sent. We'll reply by email soon.";
 });
 

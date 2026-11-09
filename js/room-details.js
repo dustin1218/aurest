@@ -6,7 +6,8 @@ if (!room) {
   document.title = `${room.name} | AUREST`;
   $("#crumb-room").textContent = room.name;
   const s = getSearch(),
-    n = nightsBetween(s.checkin, s.checkout);
+    n = nightsBetween(s.checkin, s.checkout),
+    free = available(room.id, s.checkin, s.checkout);
   wrap.innerHTML = `
     <div class="detail">
       <div>
@@ -24,13 +25,14 @@ if (!room) {
         <p class="lead">${esc(room.desc)}</p>
         <span class="price">${peso(room.price)} <small>/ night</small></span>
         <div class="stay-line">Your stay: <b>${fmtDate(s.checkin)} – ${fmtDate(s.checkout)}</b> (${plural(n, "night")}) · Total <b>${peso(room.price * n)}</b><br><a href="index.html#home">Change dates</a></div>
-        <button class="btn block" id="reserve" type="button">Reserve this room</button>
+        <button class="btn block" id="reserve" type="button"${free ? "" : " disabled"}>${free ? "Reserve this room" : "Not available on these dates"}</button>
       </aside>
     </div>
     <ul class="amenities" aria-label="Room features"><li>${esc(room.bed)}</li><li>${room.size} m²</li>${room.amenities.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>`;
   $$(".thumb").forEach((t) =>
     t.addEventListener("click", () => {
       $("#main-photo").src = room.gallery[t.dataset.i];
+      $("#main-photo").alt = `${room.name} photo ${+t.dataset.i + 1}`;
       $$(".thumb").forEach((x) => x.setAttribute("aria-pressed", x === t));
     }),
   );

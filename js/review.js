@@ -71,7 +71,17 @@ $("#confirm").addEventListener("click", async () => {
 function paymentPreview() {
   $("#payment-due").textContent =
     "Amount to transfer: " +
-    peso(total * ($('[name="payment-plan"]:checked').value === "full" ? 1 : 0.3));
+    peso(total * ($('[name="payment-plan"]:checked').value === "full" ? 1 : 0.3)) +
+    ". Send to: " +
+    hotelInfo.payTo +
+    ".";
 }
-$$('[name="payment-plan"]').forEach((e) => e.addEventListener("change", paymentPreview));
+// Remember the choice so a refresh does not silently switch it back to the deposit.
+if (d?.paymentPlan === "full") $('[name="payment-plan"][value="full"]').checked = true;
+$$('[name="payment-plan"]').forEach((e) =>
+  e.addEventListener("change", () => {
+    store.set("aurest-draft", { ...d, paymentPlan: e.value });
+    paymentPreview();
+  }),
+);
 paymentPreview();

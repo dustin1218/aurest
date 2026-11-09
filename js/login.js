@@ -18,19 +18,19 @@ $$(".pw-toggle").forEach((b) =>
 const id = $("#identifier"),
   pw = $("#password"),
   formError = $("#form-error");
+const loginDraft = keepFormOnRefresh($("#login-form"));
 const check = () =>
   [
     setError(id, id.value.trim() ? "" : "Please enter your username or email."),
     setError(pw, pw.value ? "" : "Please enter your password."),
   ].every(Boolean);
-[id, pw].forEach((i) =>
-  i.addEventListener("blur", () => (i.value || i === document.activeElement ? 0 : check())),
-);
+// New guests keep their place: a booking started before sign-in continues after registering.
+if (location.search) $('a[href="register.html"]').href = "register.html" + location.search;
 
 $("#login-form").addEventListener("submit", (e) => {
   e.preventDefault();
   formError.textContent = "";
-  if (!check()) return;
+  if (!check()) return $(".invalid", e.target).focus();
   const q = id.value.trim().toLowerCase();
   const u = allUsers().find(
     (x) =>
@@ -39,8 +39,10 @@ $("#login-form").addEventListener("submit", (e) => {
   );
   if (!u) {
     formError.textContent = "Incorrect username/email or password. Please try again.";
+    pw.focus();
     return;
   }
+  loginDraft.clear();
   store.set("aurest-user", {
     name: profileFor(u.email).name || u.name,
     email: u.email,

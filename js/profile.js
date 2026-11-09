@@ -1,6 +1,12 @@
 // Account settings use browser storage; the photo is a portrait, never an identity document.
 if (!getUser()) location.replace("login.html?next=profile.html");
 const profileUser = getUser();
+let profileDraft = null;
+// Problems use the error style, so they are not mistaken for a successful save.
+function showProfileNotice(message, isError) {
+  $("#profile-notice").className = isError ? "form-error" : "notice";
+  $("#profile-notice").textContent = message;
+}
 let picture = profileFor(profileUser?.email).picture || "";
 // Show the chosen portrait or first-letter fallback. Changes are previews until the profile is saved.
 function drawAvatar() {
@@ -19,6 +25,7 @@ if (profileUser) {
   ["name", "phone", "city", "emergency", "preferences"].forEach(
     (k) => ($(`[name="${k}"]`).value = p[k] || (k === "name" ? profileUser.name : "")),
   );
+  profileDraft = keepFormOnRefresh($("#profile-form"));
   drawAvatar();
 }
 $("#remove-avatar").onclick = () => {
@@ -48,7 +55,7 @@ $("#avatar-file").onchange = async (e) => {
       URL.revokeObjectURL(url);
     }
   } catch (err) {
-    $("#profile-notice").textContent = err.message;
+    showProfileNotice(err.message, true);
   }
   e.target.value = "";
 };
@@ -68,11 +75,12 @@ $("#profile-form").onsubmit = (e) => {
       .get("aurest-users", [])
       .map((u) => (u.email === profileUser.email ? { ...u, name: p.name } : u));
     persist("aurest-users", registered);
+    profileDraft.clear();
     $("#profile-name").textContent = p.name;
     drawAvatar();
     updateNavAvatar();
-    $("#profile-notice").textContent = "Profile saved.";
+    showProfileNotice("Profile saved.");
   } catch (err) {
-    $("#profile-notice").textContent = err.message;
+    showProfileNotice(err.message, true);
   }
 };

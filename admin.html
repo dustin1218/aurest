@@ -17,12 +17,61 @@
         </p>
       </div>
       <div class="wrap">
-        <nav class="admin-tabs">
-          <a href="#analytics">Analytics</a><a href="#payment-admin">Payments</a
-          ><a href="#bookings-body">Reservations</a
-          ><a href="#verification-admin">Verification & discounts</a><a href="#add-room">Rooms</a>
+        <!-- Each box opens one panel below. js/admin-nav.js shows the panel and fills in the live counts. -->
+        <nav class="admin-hub" id="admin-hub" aria-label="Admin sections">
+          <a class="hub-home" href="#overview" data-view="overview">Overview</a>
+          <a class="hub-box" href="#payments" data-view="payments"
+            ><span class="hub-name">Payments</span><span class="hub-detail"></span
+            ><span class="hub-badge" hidden></span
+          ></a>
+          <a class="hub-box" href="#reservations" data-view="reservations"
+            ><span class="hub-name">Reservations</span><span class="hub-detail"></span
+            ><span class="hub-badge" hidden></span
+          ></a>
+          <a class="hub-box" href="#verification" data-view="verification"
+            ><span class="hub-name">Verification</span><span class="hub-detail"></span
+            ><span class="hub-badge" hidden></span
+          ></a>
+          <a class="hub-box" href="#refunds" data-view="refunds"
+            ><span class="hub-name">Refunds & changes</span><span class="hub-detail"></span
+            ><span class="hub-badge" hidden></span
+          ></a>
+          <a class="hub-box" href="#analytics" data-view="analytics"
+            ><span class="hub-name">Analytics</span><span class="hub-detail"></span
+            ><span class="hub-badge" hidden></span
+          ></a>
+          <a class="hub-box" href="#rooms" data-view="rooms"
+            ><span class="hub-name">Rooms</span><span class="hub-detail"></span
+            ><span class="hub-badge" hidden></span
+          ></a>
+          <a class="hub-box" href="#guests" data-view="guests"
+            ><span class="hub-name">Guests</span><span class="hub-detail"></span
+            ><span class="hub-badge" hidden></span
+          ></a>
         </nav>
-        <section id="analytics">
+
+        <div class="admin-panel" id="panel-overview" tabindex="-1" hidden>
+          <section class="card-box" aria-labelledby="today-h">
+            <h2 id="today-h">Today's arrivals</h2>
+            <p class="sub">Guests due to check in today.</p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Dates</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="today-arrivals"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div class="admin-panel" id="panel-analytics" tabindex="-1" hidden>
+        <section>
           <h2>Payment analytics</h2>
           <p class="sub">Manual ledger • amounts count only after verification • all-time totals</p>
           <div class="stats" id="finance-stats"></div>
@@ -57,24 +106,9 @@
           </section>
         </div>
 
-        <section class="card-box" aria-labelledby="up-h">
-          <h2 id="up-h">Upcoming arrivals</h2>
-          <p class="sub">The next reservations that are not cancelled.</p>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Guest</th>
-                  <th>Room</th>
-                  <th>Dates</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="arrivals"></tbody>
-            </table>
-          </div>
-        </section>
+        </div>
 
+        <div class="admin-panel" id="panel-payments" tabindex="-1" hidden>
         <section class="card-box" id="payment-admin">
           <h2>Payments & transactions</h2>
           <p class="sub">
@@ -115,6 +149,29 @@
             </table>
           </div>
         </section>
+        </div>
+
+        <div class="admin-panel" id="panel-refunds" tabindex="-1" hidden>
+        <section class="card-box">
+          <h2>Refunds to send</h2>
+          <p class="sub">
+            Send the money outside the app first, then record the receipt reference here.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Requested</th>
+                  <th>Booking / guest</th>
+                  <th>Reason</th>
+                  <th>Amount</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="refund-body"></tbody>
+            </table>
+          </div>
+        </section>
         <section class="card-box">
           <h2>Cancellations & rescheduling</h2>
           <div class="table-wrap">
@@ -131,6 +188,9 @@
             </table>
           </div>
         </section>
+        </div>
+
+        <div class="admin-panel" id="panel-verification" tabindex="-1" hidden>
         <section class="card-box" id="verification-admin">
           <h2>Identity & discount review</h2>
           <p class="sub">
@@ -154,7 +214,21 @@
             </table>
           </div>
         </section>
-        <section class="card-box" id="add-room" aria-labelledby="add-h">
+        </div>
+
+        <div class="admin-panel" id="panel-rooms" tabindex="-1" hidden>
+        <div class="panel-actions">
+          <button
+            class="btn"
+            type="button"
+            id="toggle-add-room"
+            aria-expanded="false"
+            aria-controls="add-room"
+          >
+            Add a room
+          </button>
+        </div>
+        <section class="card-box" id="add-room" aria-labelledby="add-h" hidden>
           <h2 id="add-h">Add a room</h2>
           <p class="sub">
             New rooms are saved right away and appear on the home page. Add a thumbnail for the card
@@ -262,6 +336,26 @@
             </table>
           </div>
         </section>
+        </div>
+
+        <div class="admin-panel" id="panel-reservations" tabindex="-1" hidden>
+        <section class="card-box" aria-labelledby="up-h">
+          <h2 id="up-h">Upcoming arrivals</h2>
+          <p class="sub">The next reservations that are not cancelled.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Guest</th>
+                  <th>Room</th>
+                  <th>Dates</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="arrivals"></tbody>
+            </table>
+          </div>
+        </section>
         <section class="card-box">
           <h2>Bookings</h2>
           <p class="sub">Change a status with the drop-down. Guest reservations appear here too.</p>
@@ -283,6 +377,9 @@
             </table>
           </div>
         </section>
+        </div>
+
+        <div class="admin-panel" id="panel-guests" tabindex="-1" hidden>
         <section class="card-box">
           <h2>Guests</h2>
           <div class="table-wrap">
@@ -299,6 +396,7 @@
             </table>
           </div>
         </section>
+        </div>
       </div>
     </main>
     <footer id="site-footer"></footer>
@@ -307,6 +405,7 @@
     <script src="js/app.js"></script>
     <script src="js/finance.js"></script>
     <script src="js/charts.js"></script>
+    <script src="js/admin-nav.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/admin-finance.js"></script>
   </body>

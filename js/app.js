@@ -59,20 +59,81 @@ const plural = (n, w, pl = w + "s") => `${n} ${n === 1 ? w : pl}`;
 // Allow only local page redirects after sign-in rather than arbitrary external URLs.
 const safeNext = (n) => (/^[a-z-]+\.html(\?[\w=&.-]*)?$/i.test(n || "") ? n : "index.html");
 
+// Keep what was typed in a form across a page refresh, for this browser tab only.
+// Passwords are never saved, and browsers do not allow file inputs to be refilled.
+// Call after the page has filled in its defaults, and call clear() once the form succeeds.
+const FORM_DRAFT_PREFIX = "aurest-form:";
+function keepFormOnRefresh(form, scope = "") {
+  const key = [FORM_DRAFT_PREFIX, (getUser() || {}).email || "", location.pathname, form.id, scope].join("|");
+  const fields = () =>
+    [...form.elements].filter(
+      (el) => (el.id || el.name) && !/^(password|file|submit|button|reset)$/.test(el.type),
+    );
+  const isToggle = (el) => el.type === "checkbox" || el.type === "radio";
+  const save = () => {
+    const values = {};
+    fields().forEach((el) => (values[el.id || el.name] = isToggle(el) ? el.checked : el.value));
+    try {
+      sessionStorage.setItem(key, JSON.stringify(values));
+    } catch {}
+  };
+  let saved = null;
+  try {
+    saved = JSON.parse(sessionStorage.getItem(key));
+  } catch {}
+  let restored = false;
+  if (saved)
+    fields().forEach((el) => {
+      const value = saved[el.id || el.name];
+      if (value === undefined) return;
+      if (isToggle(el)) el.checked = value;
+      else {
+        const before = el.value;
+        el.value = value;
+        if (el.tagName === "SELECT" && el.selectedIndex < 0) el.value = before; // that option no longer exists
+        if (value.trim()) restored = true;
+      }
+    });
+  form.addEventListener("input", save);
+  form.addEventListener("change", save);
+  return {
+    restored,
+    clear() {
+      try {
+        sessionStorage.removeItem(key);
+      } catch {}
+    },
+  };
+}
+function clearAllFormDrafts() {
+  try {
+    Object.keys(sessionStorage)
+      .filter((k) => k.startsWith(FORM_DRAFT_PREFIX))
+      .forEach((k) => sessionStorage.removeItem(k));
+  } catch {}
+}
+
 function setError(input, msg) {
   const e = document.getElementById(input.id + "-error");
-  if (e) e.textContent = msg;
+  if (e) {
+    e.textContent = msg;
+    // Tie the message to its field so screen readers announce it too.
+    const ids = (input.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
+    if (!ids.includes(e.id)) input.setAttribute("aria-describedby", [...ids, e.id].join(" "));
+  }
   input.classList.toggle("invalid", !!msg);
   input.setAttribute("aria-invalid", !!msg);
   return !msg;
 }
+// Longer messages stay up longer, and a new message replaces the old one instead of covering it.
 function toast(msg) {
+  $$(".toast").forEach((old) => old.remove());
   const t = document.createElement("div");
   t.className = "toast";
   t.setAttribute("role", "status");
   t.textContent = msg;
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3200);
+  setTimeout(() => t.remove(), Math.max(3200, msg.length * 70));
 }
 function roomCard(r) {
   return `<article class="card">
@@ -220,6 +281,12 @@ function updateNavAvatar() {
       btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
     });
     $$(".main-nav a, .cart-btn, .logo", hdr).forEach((a) => a.addEventListener("click", closeMenu));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && hdr.classList.contains("open")) {
+        closeMenu();
+        btn.focus();
+      }
+    });
     const so = $("#signout");
     if (so)
       so.addEventListener("click", async () => {
@@ -231,6 +298,7 @@ function updateNavAvatar() {
         });
         if (ok) {
           store.del("aurest-user");
+          clearAllFormDrafts();
           location.href = "index.html";
         }
       });

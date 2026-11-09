@@ -43,7 +43,14 @@ function showConfirmation(b) {
     $("#c-title").textContent = "This stay was cancelled.";
     $("#c-lead").textContent = "You're always welcome to book again.";
   }
-  $("#c-note").textContent = note + " " + paymentSummary(b);
+  // Tell the guest exactly what to do next, so they do not have to remember it from the review page.
+  const money = moneyFor(b);
+  const due = Math.max(0, (b.paymentPlan === "full" ? money.total : money.total * 0.3) - money.net);
+  const nextStep =
+    b.status === "Pending" && due > 0
+      ? ` Next step: transfer ${peso(due)} to ${hotelInfo.payTo}, then submit the reference in My bookings.`
+      : "";
+  $("#c-note").textContent = note + nextStep + " " + paymentSummary(b);
   if (b.status === "Pending") $("#c-title").textContent = "Reservation received.";
   $("#confirm").hidden = false;
 }

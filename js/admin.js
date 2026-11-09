@@ -2,6 +2,7 @@
 if (!isAdmin()) location.replace("login.html?next=admin.html");
 
 const MAX_EXTRA = 5;
+const ROOM_PHOTOS_KEY = FORM_DRAFT_PREFIX + "room-photos";
 let thumb = null,
   extra = [];
 const f = (id) => document.getElementById(id);
@@ -34,6 +35,11 @@ const prev = (src, label, i, main) =>
 function drawPreviews() {
   f("thumb-prev").innerHTML = thumb ? prev(thumb, "thumbnail", 0, true) : "";
   f("more-prev").innerHTML = extra.map((s, i) => prev(s, "photo " + (i + 1), i)).join("");
+  try {
+    sessionStorage.setItem(ROOM_PHOTOS_KEY, JSON.stringify({ thumb, extra }));
+  } catch {
+    sessionStorage.removeItem(ROOM_PHOTOS_KEY); // too large to keep, so photos won't survive a refresh
+  }
 }
 f("thumb-file").addEventListener("change", async (e) => {
   const file = e.target.files[0];
@@ -94,7 +100,22 @@ Object.keys(rules).forEach((k) =>
   }),
 );
 
+// Bring back an unfinished room after a refresh, including its photos and any field errors.
+const roomDraft = keepFormOnRefresh(f("room-form"));
+try {
+  const photos = JSON.parse(sessionStorage.getItem(ROOM_PHOTOS_KEY));
+  if (photos) ({ thumb, extra } = photos);
+} catch {}
+drawPreviews();
+if (roomDraft.restored || thumb || extra.length) {
+  setAddRoomOpen(true);
+  Object.keys(rules).forEach((k) => {
+    if (f(k).value) run(k);
+  });
+}
+
 function clearForm() {
+  roomDraft.clear();
   f("room-form").reset();
   thumb = null;
   extra = [];
@@ -165,6 +186,7 @@ f("room-form").addEventListener("submit", async (e) => {
     return;
   }
   clearForm();
+  setAddRoomOpen(false);
   render();
   toast(`${room.name} was added. It's now on the home page.`);
 });
@@ -221,6 +243,14 @@ function render() {
           `<tr><td>${esc(guestName(b))}</td><td>${esc(roomName(b))}</td><td>${fmtDate(b.checkin)} – ${fmtDate(b.checkout)}</td><td>${statusChip(b.status)}</td></tr>`,
       )
       .join("") || `<tr><td colspan="4">No upcoming arrivals.</td></tr>`;
+  f("today-arrivals").innerHTML =
+    upcoming
+      .filter((b) => b.checkin === today)
+      .map(
+        (b) =>
+          `<tr><td>${esc(guestName(b))}</td><td>${esc(roomName(b))}</td><td>${fmtDate(b.checkin)} – ${fmtDate(b.checkout)}</td><td>${statusChip(b.status)}</td></tr>`,
+      )
+      .join("") || `<tr><td colspan="4">No arrivals today.</td></tr>`;
   f("rooms-body").innerHTML = getRooms()
     .map(
       (
@@ -239,7 +269,7 @@ function render() {
       (
         b,
       ) => `<tr><td>${b.id}</td><td>${esc(guestName(b))}</td><td>${esc(roomName(b))}</td><td>${b.checkin}</td><td>${b.checkout}</td><td>${b.guests}</td>
-    <td><select data-bk="${b.id}" aria-label="Status for booking ${b.id}">${["Pending", "Confirmed", "Cancelled"].map((s) => `<option${s === b.status ? " selected" : ""}>${s}</option>`).join("")}</select></td><td>${b.status !== "Cancelled" ? `<button class="btn-outline" data-admin-reschedule="${b.id}">Reschedule</button>` : "—"}</td></tr>`,
+    <td><select data-bk="${b.id}" aria-label="Status for booking ${b.id}"${b.status === "Cancelled" ? " disabled" : ""}>${["Pending", "Confirmed", "Cancelled"].map((s) => `<option${s === b.status ? " selected" : ""}>${s}</option>`).join("")}</select></td><td>${b.status !== "Cancelled" ? `<button class="btn-outline" data-admin-reschedule="${b.id}">Reschedule</button>` : "—"}</td></tr>`,
     )
     .join("");
   f("guests-body").innerHTML = [
@@ -253,6 +283,7 @@ function render() {
         `<tr><td>${g.id}</td><td>${esc(g.name)}</td><td>${esc(g.email)}</td><td>${g.phone}</td></tr>`,
     )
     .join("");
+  updateAdminHub();
 }
 f("rooms-body").addEventListener("click", async (e) => {
   const id = e.target.dataset.del;

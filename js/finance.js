@@ -126,6 +126,11 @@ function financeDialog(title, html, onSave) {
 // Carry receipts forward at the saved nightly rate; reset discount review and queue excess money for refund.
 function rescheduleReservation(b, onSaved) {
   const id = b.id;
+  // Say so before the person picks dates, not after.
+  if (transactions().some((t) => t.bookingId === id && ["Pending", "Submitted"].includes(t.status))) {
+    toast("Submitted payments and pending refunds must be reviewed before changing dates.");
+    return;
+  }
   financeDialog(
     "Reschedule your stay",
     `<p>Verified payments carry forward. The saved nightly rate applies. A shorter stay creates a refund request; extra nights increase your balance. ID and discount reviews restart.</p><label>Check-in<input type="date" name="start" min="${addDays(0)}" value="${b.checkin}" required></label><label>Check-out<input type="date" name="end" value="${b.checkout}" required></label>`,
@@ -135,12 +140,6 @@ function rescheduleReservation(b, onSaved) {
       if (a < addDays(0) || z <= a)
         throw Error("Choose future dates with check-out after check-in.");
       if (!available(b.roomId, a, z, id)) throw Error("This room is unavailable on those dates.");
-      if (
-        transactions().some(
-          (t) => t.bookingId === id && ["Pending", "Submitted"].includes(t.status),
-        )
-      )
-        throw Error("Wait for submitted payments and pending refunds to be reviewed.");
       const rate = b.nightlyRate || b.total / nightsBetween(b.checkin, b.checkout);
       const total = rate * nightsBetween(a, z);
       const before = moneyFor(b);
@@ -167,6 +166,21 @@ function rescheduleReservation(b, onSaved) {
           reference: "Shorter rescheduled stay",
         });
       onSaved();
+      toast(`${id} moved to ${fmtDate(a)} – ${fmtDate(z)}. It is Pending until the hotel confirms it.`);
     },
   );
+  // Check-out can never be before check-in, and moves along when check-in changes.
+  const start = $('.modal-overlay [name="start"]'),
+    end = $('.modal-overlay [name="end"]');
+  const nextDay = (s) => {
+    const x = new Date(s + "T00:00");
+    x.setDate(x.getDate() + 1);
+    return iso(x);
+  };
+  end.min = nextDay(start.value);
+  start.addEventListener("change", () => {
+    if (!start.value) return;
+    end.min = nextDay(start.value);
+    if (end.value < end.min) end.value = end.min;
+  });
 }

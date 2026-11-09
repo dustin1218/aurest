@@ -58,6 +58,15 @@ function renderFinance() {
           `<tr><td>${esc(new Date(t.created).toLocaleString("en-PH"))}<br><small>${esc(t.id.slice(0, 8))}</small></td><td>${esc(t.bookingId)}<br>${esc(guestName(bs.find((b) => b.id === t.bookingId) || {}))}</td><td>${esc(t.kind)}</td><td>${esc(t.method || "Original payment method")}<br>${esc(t.reference)}</td><td>${peso(t.amount)}</td><td>${esc(t.status)}</td><td>${t.status === "Submitted" ? `<button class="btn-soft" data-tx="${t.id}" data-state="Verified">Verify receipt</button> <button class="btn-danger" data-tx="${t.id}" data-state="Rejected">Reject</button>` : t.status === "Pending" ? `<button class="btn-soft" data-tx="${t.id}" data-state="Completed">Record refund sent</button>` : "—"}</td></tr>`,
       )
       .join("") || '<tr><td colspan="7">No matching transactions.</td></tr>';
+  $("#refund-body").innerHTML =
+    ts
+      .filter((t) => t.status === "Pending")
+      .sort((a, b) => a.created.localeCompare(b.created))
+      .map(
+        (t) =>
+          `<tr><td>${esc(new Date(t.created).toLocaleString("en-PH"))}</td><td>${esc(t.bookingId)}<br>${esc(guestName(bs.find((b) => b.id === t.bookingId) || {}))}</td><td>${esc(t.reference)}</td><td>${peso(t.amount)}</td><td><button class="btn-soft" data-tx="${t.id}" data-state="Completed">Record refund sent</button></td></tr>`,
+      )
+      .join("") || '<tr><td colspan="5">No refunds waiting.</td></tr>';
   $("#verification-body").innerHTML = bs
     .filter((b) => b.status !== "Cancelled")
     .map(
@@ -65,6 +74,7 @@ function renderFinance() {
         `<tr><td>${esc(b.id)}<br>${esc(guestName(b))}</td><td>${esc(b.identityStatus || "Not checked")}</td><td style="white-space:pre-line">${esc(b.discountGuests || "None requested")}</td><td>${esc(b.discountStatus || "Not reviewed")}<br>${peso(b.discountAmount || 0)}</td><td><button class="btn-outline" data-review="${b.id}">Review guest</button></td></tr>`,
     )
     .join("");
+  updateAdminHub();
 }
 const refreshAdmin = () => {
   render();
@@ -73,7 +83,7 @@ const refreshAdmin = () => {
 $("#transaction-search").oninput = renderFinance;
 $("#transaction-filter").onchange = renderFinance;
 // Staff verify external receipts or record refunds already sent; each decision saves reviewer and time.
-$("#transaction-body").onclick = async (e) => {
+$("#transaction-body").onclick = $("#refund-body").onclick = async (e) => {
   const btn = e.target.closest("[data-tx]");
   if (!btn || !isAdmin()) return;
   const ts = transactions(),
@@ -100,6 +110,7 @@ $("#transaction-body").onclick = async (e) => {
         t.reviewedBy = getUser().email;
         persist("aurest-transactions", ts);
         refreshAdmin();
+        toast(`Refund of ${peso(t.amount)} recorded for ${t.bookingId}.`);
       },
     );
     return;
@@ -117,6 +128,7 @@ $("#transaction-body").onclick = async (e) => {
     t.reviewedAt = new Date().toISOString();
     persist("aurest-transactions", ts);
     refreshAdmin();
+    toast(`${peso(t.amount)} for ${t.bookingId} ${target === "Verified" ? "verified" : "rejected"}.`);
   }
 };
 // Record original-ID checks and a reviewed discount amount; no ID scans or automatic group discounts.
@@ -160,6 +172,7 @@ $("#verification-body").onclick = (e) => {
           reference: "Approved discount adjustment",
         });
       refreshAdmin();
+      toast(`Review saved for ${id}.`);
     },
   );
   const form = $(".modal-overlay:last-child form");
@@ -217,6 +230,7 @@ $("#bookings-body").addEventListener("change", async (e) => {
     persist("aurest-status", o);
   }
   refreshAdmin();
+  toast(`${id} marked ${status}.`);
 });
 renderFinance();
 $("#bookings-body").addEventListener("click", (e) => {

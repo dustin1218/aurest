@@ -106,6 +106,10 @@ h3 {
 .btn-outline:hover {
   border-color: var(--green);
 }
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 .btn.block {
   width: 100%;
 }
@@ -2059,23 +2063,113 @@ td select {
   min-height: auto;
   margin: 8px 6px 8px 0;
 }
-.admin-tabs {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+/* Admin dashboard boxes; .compact is the slim sticky bar shown while a section is open. */
+.admin-hub {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
   margin-bottom: 28px;
 }
-.admin-tabs a {
-  padding: 10px 16px;
-  background: var(--mint);
-  border-radius: 30px;
+.hub-home {
+  display: none;
+}
+.hub-box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 118px;
+  padding: 22px 24px;
+  background: var(--paper);
+  border: 1px solid transparent;
+  border-radius: 14px;
   color: var(--green);
   text-decoration: none;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
 }
-#analytics,
-#payment-admin,
-#verification-admin {
-  scroll-margin-top: 100px;
+.hub-box:hover {
+  border-color: var(--green);
+  transform: translateY(-2px);
+}
+.hub-name {
+  padding-right: 34px;
+  font: 500 22px var(--font-head);
+}
+.hub-detail {
+  color: var(--muted);
+  font-size: 14px;
+}
+.hub-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border-radius: 13px;
+  background: var(--gold);
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 26px;
+  text-align: center;
+}
+.admin-hub.compact {
+  position: sticky;
+  top: var(--admin-header-h, 0);
+  z-index: 20;
+  display: flex;
+  gap: 6px;
+  margin: 0 0 24px;
+  padding: 10px 0;
+  overflow-x: auto;
+  background: var(--cream);
+}
+.admin-hub.compact .hub-home,
+.admin-hub.compact .hub-box {
+  display: inline-flex;
+  flex: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--mint);
+  color: var(--green);
+  font-size: 14px;
+  text-decoration: none;
+  transform: none;
+}
+.admin-hub.compact .hub-name {
+  padding: 0;
+  font: inherit;
+}
+.admin-hub.compact .hub-detail {
+  display: none;
+}
+.admin-hub.compact .hub-badge {
+  position: static;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  font-size: 12px;
+  line-height: 20px;
+}
+.admin-hub.compact [aria-current="page"] {
+  background: var(--green);
+  color: var(--paper);
+}
+.admin-panel:focus {
+  outline: none;
+}
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
 }
 #finance-stats {
   margin: 20px 0;
@@ -2162,11 +2256,24 @@ td select {
   .collection-row b {
     grid-column: 2;
   }
-  .admin-tabs {
-    gap: 6px;
+  .admin-hub {
+    gap: 12px;
   }
-  .admin-tabs a {
-    font-size: 13px;
+  .hub-box {
+    padding: 16px 14px;
+  }
+  .hub-name {
+    padding-right: 30px;
+    font-size: 17px;
+  }
+  .hub-badge {
+    top: 13px;
+    right: 12px;
+  }
+}
+@media (max-width: 1000px) {
+  .admin-hub {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
