@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin | AUREST</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body data-nav="admin">
+    <header id="site-header"></header>
+    <main id="main">
+      <div class="page-title">
+        <div class="eyebrow">Front office</div>
+        <h1>A thoughtful start to the day.</h1>
+        <p style="color: var(--muted); margin: 8px 0 0">
+          A simple overview for the people behind a comfortable stay.
+        </p>
+      </div>
+      <div class="wrap">
+        <nav class="admin-tabs">
+          <a href="#analytics">Analytics</a><a href="#payment-admin">Payments</a
+          ><a href="#bookings-body">Reservations</a
+          ><a href="#verification-admin">Verification & discounts</a><a href="#add-room">Rooms</a>
+        </nav>
+        <section id="analytics">
+          <h2>Payment analytics</h2>
+          <p class="sub">Manual ledger • amounts count only after verification • all-time totals</p>
+          <div class="stats" id="finance-stats"></div>
+          <div id="finance-chart" class="card-box"></div>
+        </section>
+        <div class="stats" id="stats"></div>
+
+        <div class="viz-grid">
+          <section class="card-box viz-card" aria-labelledby="sc-h">
+            <div class="viz-top">
+              <div>
+                <h2 id="sc-h">Bookings by status</h2>
+                <p class="sub">Every reservation, including cancelled ones.</p>
+              </div>
+              <button class="btn-soft viz-toggle" type="button" id="sc-toggle" aria-pressed="false">
+                Table view
+              </button>
+            </div>
+            <div class="viz" id="status-chart"></div>
+          </section>
+          <section class="card-box viz-card" aria-labelledby="oc-h">
+            <div class="viz-top">
+              <div>
+                <h2 id="oc-h">Occupancy</h2>
+                <p class="sub">Rooms with a stay on the night you pick.</p>
+              </div>
+              <div class="field occ-date">
+                <label for="occ-date">Night</label><input id="occ-date" type="date" />
+              </div>
+            </div>
+            <div id="occupancy"></div>
+          </section>
+        </div>
+
+        <section class="card-box" aria-labelledby="up-h">
+          <h2 id="up-h">Upcoming arrivals</h2>
+          <p class="sub">The next reservations that are not cancelled.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Guest</th>
+                  <th>Room</th>
+                  <th>Dates</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="arrivals"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card-box" id="payment-admin">
+          <h2>Payments & transactions</h2>
+          <p class="sub">
+            Verify transfers against your bank or receipt records. Completing a refund records an
+            external refund already sent.
+          </p>
+          <div class="two">
+            <div class="field">
+              <label for="transaction-search">Search booking, reference or guest</label
+              ><input id="transaction-search" type="search" placeholder="Search transactions" />
+            </div>
+            <div class="field">
+              <label for="transaction-filter">Status</label
+              ><select id="transaction-filter">
+                <option value="">All statuses</option>
+                <option>Submitted</option>
+                <option>Verified</option>
+                <option>Rejected</option>
+                <option>Pending</option>
+                <option>Completed</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date / transaction</th>
+                  <th>Booking / guest</th>
+                  <th>Type</th>
+                  <th>Method / reference</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="transaction-body"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="card-box">
+          <h2>Cancellations & rescheduling</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Booking / guest</th>
+                  <th>Change</th>
+                  <th>Dates</th>
+                  <th>Payment outcome</th>
+                </tr>
+              </thead>
+              <tbody id="changes-body"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="card-box" id="verification-admin">
+          <h2>Identity & discount review</h2>
+          <p class="sub">
+            Inspect the original ID and match its name to the guest. This records a manual check,
+            not automated identity authentication. For mixed groups, enter only the reviewed
+            eligible discount including applicable VAT treatment. Never discount the whole group
+            automatically.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Booking / guest</th>
+                  <th>Identity</th>
+                  <th>Senior / PWD request</th>
+                  <th>Discount</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="verification-body"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="card-box" id="add-room" aria-labelledby="add-h">
+          <h2 id="add-h">Add a room</h2>
+          <p class="sub">
+            New rooms are saved right away and appear on the home page. Add a thumbnail for the card
+            and more photos for the room details page.
+          </p>
+          <div class="form-error" id="add-error" role="alert"></div>
+          <form id="room-form" novalidate>
+            <div class="two">
+              <div class="field">
+                <label for="r-name">Room name</label
+                ><input id="r-name" placeholder="e.g. Garden Suite" /><small
+                  class="error"
+                  id="r-name-error"
+                ></small>
+              </div>
+              <div class="field">
+                <label for="r-price">Price per night (₱)</label
+                ><input id="r-price" type="number" min="1" step="50" placeholder="4500" /><small
+                  class="error"
+                  id="r-price-error"
+                ></small>
+              </div>
+              <div class="field">
+                <label for="r-guests">Maximum guests</label
+                ><input id="r-guests" type="number" min="1" max="10" placeholder="2" /><small
+                  class="error"
+                  id="r-guests-error"
+                ></small>
+              </div>
+              <div class="field">
+                <label for="r-bed">Bed type</label
+                ><input id="r-bed" placeholder="e.g. 1 king bed" /><small
+                  class="error"
+                  id="r-bed-error"
+                ></small>
+              </div>
+              <div class="field">
+                <label for="r-size">Size (m²)</label
+                ><input id="r-size" type="number" min="1" placeholder="32" /><small
+                  class="error"
+                  id="r-size-error"
+                ></small>
+              </div>
+              <div class="field">
+                <label for="r-amen">Amenities</label
+                ><input id="r-amen" placeholder="Wi-Fi, Air conditioning, Balcony" /><small
+                  class="hint"
+                  >Separate with commas.</small
+                >
+              </div>
+            </div>
+            <div class="field">
+              <label for="r-desc">Short description</label
+              ><textarea
+                id="r-desc"
+                style="min-height: 90px"
+                placeholder="A few friendly sentences about the room."
+              ></textarea
+              ><small class="error" id="r-desc-error"></small>
+            </div>
+            <div class="two">
+              <div class="field">
+                <label for="thumb-file">Thumbnail image (shown on the room card)</label
+                ><input
+                  id="thumb-file"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                /><small class="error" id="thumb-file-error"></small>
+                <div class="previews" id="thumb-prev"></div>
+              </div>
+              <div class="field">
+                <label for="more-files">More photos for the details page (up to 5)</label
+                ><input
+                  id="more-files"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  multiple
+                /><small class="error" id="more-files-error"></small>
+                <div class="previews" id="more-prev"></div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn" type="submit">Save room</button
+              ><button class="btn-outline" type="button" id="reset-form">Clear form</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card-box">
+          <h2>Rooms</h2>
+          <p class="sub">Everything listed on the website.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Room</th>
+                  <th>Capacity</th>
+                  <th>Rate</th>
+                  <th>Source</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="rooms-body"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="card-box">
+          <h2>Bookings</h2>
+          <p class="sub">Change a status with the drop-down. Guest reservations appear here too.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Guest</th>
+                  <th>Room</th>
+                  <th>Check-in</th>
+                  <th>Check-out</th>
+                  <th>Guests</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-body"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="card-box">
+          <h2>Guests</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                </tr>
+              </thead>
+              <tbody id="guests-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+    <footer id="site-footer"></footer>
+    <!-- Load shared data and helpers before the script for this page; script order matters. -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/finance.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-finance.js"></script>
+  </body>
+</html>

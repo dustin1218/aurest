@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Guest and stay details | AUREST</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body data-nav="rooms">
+    <header id="site-header"></header>
+    <main id="main">
+      <ol class="steps" aria-label="Booking progress">
+        <li aria-current="step"><b>01</b>Guest &amp; stay details</li>
+        <li><b>02</b>Review reservation</li>
+        <li><b>03</b>Confirmation</li>
+      </ol>
+      <div class="page-title">
+        <div class="eyebrow">Make yourself at home</div>
+        <h1>Your stay starts here.</h1>
+      </div>
+      <div class="booking">
+        <form class="form-card" id="booking-form" novalidate>
+          <h2>Guest &amp; stay details</h2>
+          <div class="form-error" id="form-error" role="alert"></div>
+          <div class="two">
+            <div class="field">
+              <label for="first">First name</label
+              ><input id="first" autocomplete="given-name" /><small
+                class="error"
+                id="first-error"
+              ></small>
+            </div>
+            <div class="field">
+              <label for="last">Last name</label
+              ><input id="last" autocomplete="family-name" /><small
+                class="error"
+                id="last-error"
+              ></small>
+            </div>
+            <div class="field">
+              <label for="email">Email address</label
+              ><input id="email" type="email" autocomplete="email" /><small
+                class="error"
+                id="email-error"
+              ></small>
+            </div>
+            <div class="field">
+              <label for="phone">Contact number</label
+              ><input id="phone" type="tel" placeholder="0917 000 0000" autocomplete="tel" /><small
+                class="error"
+                id="phone-error"
+              ></small>
+            </div>
+            <div class="field">
+              <label for="checkin">Check-in</label><input id="checkin" type="date" /><small
+                class="error"
+                id="checkin-error"
+              ></small>
+            </div>
+            <div class="field">
+              <label for="checkout">Check-out</label><input id="checkout" type="date" /><small
+                class="error"
+                id="checkout-error"
+              ></small>
+            </div>
+            <div class="field">
+              <label for="adults">Adults</label
+              ><select id="adults">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option></select
+              ><small class="error" id="adults-error"></small>
+            </div>
+            <div class="field">
+              <label for="children">Children</label
+              ><select id="children">
+                <option>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option></select
+              ><small class="error" id="children-error"></small>
+            </div>
+          </div>
+          <section class="policy-box">
+            <h3>Guest verification & discounts</h3>
+            <p>
+              Bring an original government photo ID for staff verification. No ID images are stored
+              here.
+            </p>
+            <div class="field">
+              <label for="discount-guests">Senior / PWD guests (optional)</label
+              ><textarea
+                id="discount-guests"
+                placeholder="One guest per line: Maria Santos — Senior"
+              ></textarea
+              ><small
+                >Only list guests staying in this room. Bring original senior/PWD IDs on arrival.
+                Staff review the eligible share. Discounts do not automatically apply to the whole
+                group or stack for the same person.</small
+              >
+            </div>
+          </section>
+          <div class="field">
+            <label for="requests">Special requests (optional)</label
+            ><textarea
+              id="requests"
+              placeholder="Anything we can do to make your stay more comfortable?"
+            ></textarea>
+          </div>
+          <div class="actions">
+            <a class="btn-outline" id="back" href="index.html#rooms">Back</a
+            ><button class="btn" type="submit">Review reservation →</button>
+          </div>
+        </form>
+        <aside class="summary" aria-label="Reservation summary">
+          <img id="sum-img" src="" alt="" />
+          <h3 id="sum-name"></h3>
+          <p class="sub" id="sum-meta"></p>
+          <div class="sum-row"><span>Check-in</span><b id="sum-in"></b></div>
+          <div class="sum-row"><span>Check-out</span><b id="sum-out"></b></div>
+          <div class="sum-row"><span id="sum-calc"></span><span id="sum-sub"></span></div>
+          <div class="sum-row total">
+            <span>Total room charge</span><span id="sum-total"></span>
+          </div>
+        </aside>
+      </div>
+    </main>
+    <footer id="site-footer"></footer>
+    <!-- Load shared data and helpers before the script for this page; script order matters. -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/finance.js"></script>
+    <script src="js/booking.js"></script>
+  </body>
+</html>

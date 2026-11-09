@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Home | AUREST</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body data-nav="home" data-page="home">
+    <header id="site-header"></header>
+    <main id="main">
+      <div id="home">
+        <section class="hero">
+          <!-- Slideshow timing is in js/home.js (10 seconds); fade and zoom transitions are in css/style.css. -->
+          <div class="hero-slides" aria-hidden="true">
+            <img
+              class="slide on"
+              src="images/hero-1.jpg"
+              alt=""
+              onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1800&q=85'"
+            />
+            <img class="slide" src="images/hero-2.jpg" alt="" />
+            <img class="slide" src="images/hero-3.jpg" alt="" />
+            <img class="slide" src="images/hero-4.jpg" alt="" />
+          </div>
+          <div class="hero-inner">
+            <div class="eyebrow">Where Comfort Meets Care</div>
+            <h1>Find your place to unwind.</h1>
+            <p>
+              Thoughtfully designed rooms, warm hospitality, and a stay that feels like it was made
+              for you.
+            </p>
+          </div>
+          <div class="hero-controls" role="group" aria-label="Background pictures">
+            <div class="dots" id="hero-dots"></div>
+            <button
+              type="button"
+              class="hero-pause"
+              id="hero-pause"
+              aria-label="Pause the picture slideshow"
+            ></button>
+          </div>
+        </section>
+
+        <form class="search-bar" id="search" aria-label="Search rooms" novalidate>
+          <div class="field">
+            <label for="checkin">Check-in</label>
+            <input id="checkin" type="date" aria-describedby="checkin-error" />
+            <small class="error" id="checkin-error"></small>
+          </div>
+          <div class="field">
+            <label for="checkout">Check-out</label>
+            <input id="checkout" type="date" aria-describedby="checkout-error" />
+            <small class="error" id="checkout-error"></small>
+          </div>
+          <div class="field picker">
+            <label for="picker-toggle">Guests and rooms</label>
+            <button
+              type="button"
+              class="picker-toggle"
+              id="picker-toggle"
+              aria-expanded="false"
+              aria-controls="picker-panel"
+            >
+              <span id="picker-summary"></span><span aria-hidden="true">▾</span>
+            </button>
+            <div class="picker-panel" id="picker-panel" hidden>
+              <div class="prow">
+                <div><b>Adults</b><small>Ages 13 or above</small></div>
+                <div class="stepper" data-key="adults" data-min="1" data-max="8">
+                  <button type="button" data-step="-1" aria-label="Fewer adults">−</button
+                  ><output id="val-adults"></output
+                  ><button type="button" data-step="1" aria-label="More adults">+</button>
+                </div>
+              </div>
+              <div class="prow">
+                <div><b>Children</b><small>Ages 0 to 12</small></div>
+                <div class="stepper" data-key="children" data-min="0" data-max="6">
+                  <button type="button" data-step="-1" aria-label="Fewer children">−</button
+                  ><output id="val-children"></output
+                  ><button type="button" data-step="1" aria-label="More children">+</button>
+                </div>
+              </div>
+              <div class="prow">
+                <div><b>Rooms</b><small>Number of rooms</small></div>
+                <div class="stepper" data-key="rooms" data-min="1" data-max="5">
+                  <button type="button" data-step="-1" aria-label="Fewer rooms">−</button
+                  ><output id="val-rooms"></output
+                  ><button type="button" data-step="1" aria-label="More rooms">+</button>
+                </div>
+              </div>
+              <label class="prow"
+                ><span><b>Pets allowed</b><small>I'm bringing a pet</small></span
+                ><input type="checkbox" id="pets"
+              /></label>
+              <button type="button" class="btn picker-done" id="picker-done">Done</button>
+            </div>
+            <small class="error" id="picker-error"></small>
+          </div>
+          <button type="submit" class="btn">Search Rooms</button>
+        </form>
+      </div>
+
+      <!-- ROOMS: 3 featured, "See more" shows all rooms (including ones the admin adds) -->
+      <section class="section" id="rooms">
+        <div class="heading">
+          <div class="eyebrow">Stay your way</div>
+          <h2>Explore our rooms</h2>
+          <p>Discover a room that fits your next escape.</p>
+        </div>
+        <div class="filters" id="filters" role="search" aria-label="Filter rooms" hidden>
+          <div class="field">
+            <label for="capacity">Guests</label>
+            <select id="capacity">
+              <option value="1">Any number</option>
+              <option value="2">2 or more guests</option>
+              <option value="3">3 or more guests</option>
+              <option value="4">4 or more guests</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sort">Sort by</label>
+            <select id="sort">
+              <option value="recommended">Recommended</option>
+              <option value="low">Price: low to high</option>
+              <option value="high">Price: high to low</option>
+            </select>
+          </div>
+          <div id="chip-box"></div>
+        </div>
+        <div class="result-bar"><span id="count" role="status" aria-live="polite"></span></div>
+        <div class="gallery" id="room-gallery"></div>
+        <div class="more">
+          <button type="button" class="btn-outline" id="more" aria-expanded="false"></button>
+        </div>
+      </section>
+
+      <!-- ABOUT -->
+      <section class="about" id="about">
+        <div class="about-grid">
+          <img
+            class="about-img"
+            src="images/register-bg.jpg"
+            alt="A sunlit stone terrace overlooking a calm lake and mountains"
+            loading="lazy"
+          />
+          <div>
+            <div class="eyebrow">About AUREST</div>
+            <h2>Comfort in every detail.</h2>
+            <p>
+              AUREST was built around a simple idea: comfort feels best when it comes with care.
+              From the moment you arrive, our goal is to make your stay feel calm, welcoming, and
+              effortless.
+            </p>
+            <p>
+              Whether you're here for a quiet weekend or a longer escape, you'll find thoughtfully
+              designed rooms and a team that's glad to help.
+            </p>
+          </div>
+        </div>
+        <div class="values">
+          <div class="value">
+            <h3>Thoughtful spaces</h3>
+            <p>Rooms designed to help you rest, recharge, and feel at home.</p>
+          </div>
+          <div class="value">
+            <h3>Warm welcomes</h3>
+            <p>Friendly, attentive service from check-in to check-out.</p>
+          </div>
+          <div class="value">
+            <h3>Restful stays</h3>
+            <p>Quiet, comfortable, and made for a good night's sleep.</p>
+          </div>
+        </div>
+        <div class="how" aria-label="How booking works">
+          <div class="value">
+            <span class="num">1</span>
+            <h3>Choose your dates</h3>
+            <p>Pick check-in, check-out and how many guests are coming.</p>
+          </div>
+          <div class="value">
+            <span class="num">2</span>
+            <h3>Pick a room</h3>
+            <p>Compare rooms, photos and prices, then open the one you like.</p>
+          </div>
+          <div class="value">
+            <span class="num">3</span>
+            <h3>Reserve it</h3>
+            <p>Fill in your details, review, and confirm. It takes a minute.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section class="section" id="contact">
+        <div class="heading">
+          <div class="eyebrow">We're here to help</div>
+          <h2>Contact us</h2>
+          <p>Questions about a stay? Send us a message and we'll get back to you.</p>
+        </div>
+        <div class="contact-grid">
+          <div class="info-list" id="contact-info"></div>
+          <form class="form-card contact-form" id="contact-form" novalidate>
+            <p class="notice" id="contact-notice" role="status"></p>
+            <div class="two">
+              <div class="field">
+                <label for="c-name">Your name</label><input id="c-name" autocomplete="name" /><small
+                  class="error"
+                  id="c-name-error"
+                ></small>
+              </div>
+              <div class="field">
+                <label for="c-email">Email address</label
+                ><input id="c-email" type="email" autocomplete="email" /><small
+                  class="error"
+                  id="c-email-error"
+                ></small>
+              </div>
+            </div>
+            <div class="field">
+              <label for="c-subject">Subject</label>
+              <select id="c-subject">
+                <option>General question</option>
+                <option>Booking help</option>
+                <option>Feedback</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="c-message">Message</label
+              ><textarea id="c-message" placeholder="How can we help?"></textarea
+              ><small class="error" id="c-message-error"></small>
+            </div>
+            <button class="btn" type="submit">Send message</button>
+          </form>
+        </div>
+      </section>
+    </main>
+    <footer id="site-footer"></footer>
+    <!-- Load shared data and helpers before the script for this page; script order matters. -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/finance.js"></script>
+    <script src="js/home.js"></script>
+  </body>
+</html>
