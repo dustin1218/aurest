@@ -10,6 +10,7 @@ const toggle = $("#picker-toggle"),
   panel = $("#picker-panel");
 // There is no fixed maximum. Availability and room capacity are checked when the search runs.
 const countFor = (s, v) => Math.max(+s.dataset.min, Math.floor(+v) || 0);
+let roomSelectionReady = false;
 function updateGuests() {
   ["adults", "children", "rooms"].forEach((k) => {
     const input = $("#val-" + k);
@@ -21,6 +22,7 @@ function updateGuests() {
   $("#picker-summary").textContent =
     `${plural(party.adults, "adult")} · ${plural(party.children, "child", "children")} · ${plural(party.rooms, "room")}` +
     (party.pets ? " · Pets" : "");
+  if (roomSelectionReady) drawRooms();
 }
 const setPanel = (open) => {
   panel.hidden = !open;
@@ -112,7 +114,7 @@ form.addEventListener("submit", (e) => {
     expanded = true;
     // Each room must hold its share of the group, so filter on guests per room.
     cap.value = 1;
-    selected.clear();
+    // Keep the selection when guests or dates change; validate availability at checkout.
     drawRooms();
     $("#rooms").scrollIntoView({ behavior: "smooth" });
   }
@@ -129,6 +131,7 @@ let expanded = false,
   applied = null;
 
 function drawRooms() {
+  if (party.rooms <= 1) selected.clear();
   // After a date search, only offer room types with enough free rooms for the whole stay,
   // whose combined capacity fits the group.
   const free = {};
@@ -182,6 +185,7 @@ more.addEventListener("click", () => {
 });
 cap.addEventListener("change", drawRooms);
 sort.addEventListener("change", drawRooms);
+roomSelectionReady = true;
 drawRooms();
 
 // ===== Contact section =====
@@ -298,16 +302,20 @@ $("#contact-form").addEventListener("submit", (e) => {
 })();
 
 function selectableCard(r,note) {
+  if (party.rooms <= 1) return roomCard(r,note);
   const checked=selected.has(r.id);
   return roomCard(r,note).replace('<article class="card">', '<article class="card selectable'+(checked?' selected':'')+'" data-room="'+r.id+'"><label class="room-select"><input type="checkbox" data-select="'+r.id+'" '+(checked?'checked':'')+'><span>Select '+esc(r.name)+'</span></label>');
 }
 function drawSelection() {
+  $(".selection-bar").hidden = party.rooms <= 1;
+  $("#selection-help").hidden = party.rooms <= 1;
   for (const id of selected) if (!getRooms().some(r=>r.id===id)) selected.delete(id);
   store.set('aurest-room-selection',[...selected]);
   const list=getRooms().filter(r=>selected.has(r.id));
   const s=applied || getSearch();
   const total=list.reduce((sum,r)=>sum+r.price,0)*nightsBetween(s.checkin,s.checkout);
   $('#selection-summary').textContent=list.length ? list.map(r=>r.name).join(', ')+' · '+plural(list.length,'room')+' · '+peso(total)+' total for '+plural(nightsBetween(s.checkin,s.checkout),'night') : 'No rooms selected';
+  $('#book-selected').textContent = list.length ? 'Book ' + plural(list.length, 'selected room') : 'Book selected rooms';
   $('#book-selected').disabled=!list.length;
   $('#clear-selection').disabled=!list.length;
 }
@@ -325,15 +333,16 @@ gallery.addEventListener('change',e=>{
 });
 $('#clear-selection').addEventListener('click',()=>{selected.clear();drawRooms();});
 $('#book-selected').addEventListener('click',()=>{
-  const s=applied || getSearch();
+  if (party.rooms <= 1) return;
+  const s={checkin:cin.value, checkout:cout.value, ...party};
   const list=getRooms().filter(r=>selected.has(r.id));
   if(!list.length) return;
-  if(cin.value!==s.checkin || cout.value!==s.checkout || party.adults!==s.adults || party.children!==s.children) { toast('Apply your updated dates and guests with Search first, then select your rooms.'); return; }
-  if(s.checkin<addDays(0) || s.checkout<=s.checkin) {toast('Please search for valid future dates first.');return;}
+  if(!s.checkin || !s.checkout || s.checkin<addDays(0) || s.checkout<=s.checkin) {toast('Please search for valid future dates first.');return;}
   if(list.length>s.adults) {toast('Each selected room needs at least one adult. Update your guests in Search.');return;}
   if(list.reduce((sum,r)=>sum+r.guests,0)<s.adults+s.children) {toast('Select more rooms or larger rooms to fit your group.');return;}
   const d={...s,roomId:list[0].id,rooms:list.length,roomItems:list.map(r=>({roomId:r.id,quantity:1}))};
   if(!selectionFree(d,s.checkin,s.checkout)) {toast('A selected room is unavailable for these dates. Change your selection or search again.');return;}
+  store.set('aurest-search',s);
   store.set('aurest-draft',d);
   location.href=getUser()?'booking.html':'login.html?next=booking.html';
 });

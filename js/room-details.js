@@ -39,6 +39,8 @@ if (!room) {
         <p class="lead">${esc(room.desc)}</p>
         <span class="price">${peso(room.price)} <small>/ night</small></span>
         <div class="stay-line">Your stay: <b>${fmtDate(s.checkin)} – ${fmtDate(s.checkout)}</b> (${plural(n, "night")}${qty > 1 ? ", " + plural(qty, "room") : ""}) · Total <b>${peso(room.price * n * qty)}</b><br>${plural(left, "room")} of this type free for these dates · <a href="index.html#home">Change dates or rooms</a></div>
+        <button class="btn-outline block" id="add-selection" type="button"${qty > 1 ? "" : " hidden"}${left ? "" : " disabled"}>Add to room selection</button>
+        <p${qty > 1 ? "" : " hidden"}>Select this room, then return to the room list to add other rooms and book them together.</p>
         <button class="btn block" id="reserve" type="button"${free ? "" : " disabled"}>${bookLabel}</button>
       </aside>
     </div>
@@ -50,6 +52,13 @@ if (!room) {
       $$(".thumb").forEach((x) => x.setAttribute("aria-pressed", x === t));
     }),
   );
+  $("#add-selection").addEventListener("click", () => {
+    if (qty <= 1) return;
+    const selection = new Set(store.get("aurest-room-selection", []));
+    selection.add(room.id);
+    store.set("aurest-room-selection", [...selection]);
+    location.href = "index.html#rooms";
+  });
   $("#reserve").addEventListener("click", () => {
     store.set("aurest-draft", {
       roomId: room.id,

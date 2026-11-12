@@ -2378,3 +2378,5 @@ td select {
 .selection-bar { position:sticky; bottom:12px; z-index:5; display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:18px; margin-top:24px; border:1px solid #d5c8b6; border-radius:12px; background:#fffaf2; box-shadow:0 6px 24px #0002; }
 #selection-summary { flex:1 1 250px; }
 @media(max-width:600px) { .selection-bar { position:static; } .selection-bar button { width:100%; } }
+
+.selection-bar[hidden], #add-selection[hidden] { display: none; }

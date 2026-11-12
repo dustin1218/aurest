@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Home | AUREST</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/style.css?v=multi-room-2" />
   </head>
   <body data-nav="home" data-page="home">
     <header id="site-header"></header>
@@ -148,9 +148,9 @@
           <div id="chip-box"></div>
         </div>
         <div class="result-bar"><span id="count" role="status" aria-live="polite"></span></div>
-        <p>Select a card to add one room of that type. You can combine different types in one reservation. Use View room for photos and details.</p>
+        <p id="selection-help" hidden>Select a card to add one room of that type. You can combine different types in one reservation. Use View room for photos and details.</p>
         <div class="gallery" id="room-gallery"></div>
-        <div class="selection-bar"><div id="selection-summary" role="status" aria-live="polite"></div><button class="btn-outline" type="button" id="clear-selection">Clear selection</button><button class="btn" type="button" id="book-selected" disabled>Book selected rooms</button></div>
+        <div class="selection-bar" hidden><div id="selection-summary" role="status" aria-live="polite"></div><button class="btn-outline" type="button" id="clear-selection">Clear selection</button><button class="btn" type="button" id="book-selected" disabled>Book selected rooms</button></div>
         <div class="more">
           <button type="button" class="btn-outline" id="more" aria-expanded="false"></button>
         </div>
@@ -262,6 +262,6 @@
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
     <script src="js/finance.js"></script>
-    <script src="js/home.js"></script>
+    <script src="js/home.js?v=multi-room-2"></script>
   </body>
 </html>
