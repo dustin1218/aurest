@@ -38,17 +38,27 @@
             </div>
             <div class="field">
               <label for="email">Email address</label
-              ><input id="email" type="email" autocomplete="email" /><small
-                class="error"
-                id="email-error"
-              ></small>
+              ><input
+                id="email"
+                type="email"
+                autocomplete="email"
+                class="locked"
+                readonly
+                aria-describedby="email-hint"
+              /><small class="hint" id="email-hint">The email on your account.</small>
             </div>
             <div class="field">
-              <label for="phone">Contact number</label
-              ><input id="phone" type="tel" placeholder="0917 000 0000" autocomplete="tel" /><small
-                class="error"
-                id="phone-error"
-              ></small>
+              <label for="phone">Contact number (optional)</label
+              ><input
+                id="phone"
+                type="tel"
+                inputmode="numeric"
+                placeholder="0912 345 6789"
+                autocomplete="tel-national"
+                maxlength="13"
+                aria-describedby="phone-hint"
+              /><small class="hint" id="phone-hint">11 digits starting with 09.</small
+              ><small class="error" id="phone-error"></small>
             </div>
             <div class="field">
               <label for="checkin">Check-in</label><input id="checkin" type="date" /><small
@@ -62,23 +72,29 @@
                 id="checkout-error"
               ></small>
             </div>
+          </div>
+          <!-- No fixed maximums: the counts are checked against free rooms and room capacity. -->
+          <div class="three">
             <div class="field">
               <label for="adults">Adults</label
-              ><select id="adults">
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option></select
-              ><small class="error" id="adults-error"></small>
+              ><input id="adults" type="number" min="1" step="1" inputmode="numeric" /><small
+                class="error"
+                id="adults-error"
+              ></small>
             </div>
             <div class="field">
               <label for="children">Children</label
-              ><select id="children">
-                <option>0</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option></select
-              ><small class="error" id="children-error"></small>
+              ><input id="children" type="number" min="0" step="1" inputmode="numeric" /><small
+                class="error"
+                id="children-error"
+              ></small>
+            </div>
+            <div class="field">
+              <label for="rooms">Rooms</label
+              ><input id="rooms" type="number" min="1" step="1" inputmode="numeric" /><small
+                class="error"
+                id="rooms-error"
+              ></small>
             </div>
           </div>
           <section class="policy-box">
@@ -118,6 +134,7 @@
           <p class="sub" id="sum-meta"></p>
           <div class="sum-row"><span>Check-in</span><b id="sum-in"></b></div>
           <div class="sum-row"><span>Check-out</span><b id="sum-out"></b></div>
+          <div class="sum-row"><span>Rooms</span><b id="sum-rooms"></b></div>
           <div class="sum-row"><span id="sum-calc"></span><span id="sum-sub"></span></div>
           <div class="sum-row total">
             <span>Total room charge</span><span id="sum-total"></span>

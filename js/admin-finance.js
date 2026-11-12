@@ -55,7 +55,7 @@ function renderFinance() {
       .sort((a, b) => b.created.localeCompare(a.created))
       .map(
         (t) =>
-          `<tr><td>${esc(new Date(t.created).toLocaleString("en-PH"))}<br><small>${esc(t.id.slice(0, 8))}</small></td><td>${esc(t.bookingId)}<br>${esc(guestName(bs.find((b) => b.id === t.bookingId) || {}))}</td><td>${esc(t.kind)}</td><td>${esc(t.method || "Original payment method")}<br>${esc(t.reference)}</td><td>${peso(t.amount)}</td><td>${esc(t.status)}</td><td>${t.status === "Submitted" ? `<button class="btn-soft" data-tx="${t.id}" data-state="Verified">Verify receipt</button> <button class="btn-danger" data-tx="${t.id}" data-state="Rejected">Reject</button>` : t.status === "Pending" ? `<button class="btn-soft" data-tx="${t.id}" data-state="Completed">Record refund sent</button>` : "—"}</td></tr>`,
+          `<tr><td>${esc(new Date(t.created).toLocaleString("en-PH"))}<br><small>${esc(t.id.slice(0, 8))}</small></td><td>${esc(t.bookingId)}<br>${esc(guestName(bs.find((b) => b.id === t.bookingId) || {}))}</td><td>${esc(t.kind)}</td><td>${esc(t.method || "Original payment method")}<br>${esc(txRef(t))}${t.receiptImage ? `<br><button class="btn-outline" type="button" data-receipt="${t.id}">View receipt</button>` : ""}</td><td>${peso(t.amount)}</td><td>${esc(t.status)}</td><td>${t.status === "Submitted" ? `<button class="btn-soft" data-tx="${t.id}" data-state="Verified">Verify receipt</button> <button class="btn-danger" data-tx="${t.id}" data-state="Rejected">Reject</button>` : t.status === "Pending" ? `<button class="btn-soft" data-tx="${t.id}" data-state="Completed">Record refund sent</button>` : "—"}</td></tr>`,
       )
       .join("") || '<tr><td colspan="7">No matching transactions.</td></tr>';
   $("#refund-body").innerHTML =
@@ -64,7 +64,7 @@ function renderFinance() {
       .sort((a, b) => a.created.localeCompare(b.created))
       .map(
         (t) =>
-          `<tr><td>${esc(new Date(t.created).toLocaleString("en-PH"))}</td><td>${esc(t.bookingId)}<br>${esc(guestName(bs.find((b) => b.id === t.bookingId) || {}))}</td><td>${esc(t.reference)}</td><td>${peso(t.amount)}</td><td><button class="btn-soft" data-tx="${t.id}" data-state="Completed">Record refund sent</button></td></tr>`,
+          `<tr><td>${esc(new Date(t.created).toLocaleString("en-PH"))}</td><td>${esc(t.bookingId)}<br>${esc(guestName(bs.find((b) => b.id === t.bookingId) || {}))}</td><td>${esc(txRef(t))}</td><td>${peso(t.amount)}</td><td><button class="btn-soft" data-tx="${t.id}" data-state="Completed">Record refund sent</button></td></tr>`,
       )
       .join("") || '<tr><td colspan="5">No refunds waiting.</td></tr>';
   $("#verification-body").innerHTML = bs
@@ -82,8 +82,44 @@ const refreshAdmin = () => {
 };
 $("#transaction-search").oninput = renderFinance;
 $("#transaction-filter").onchange = renderFinance;
+// Show a guest's uploaded receipt full size so staff can compare it with bank or GCash records.
+function showReceipt(t) {
+  const back = document.activeElement;
+  const ov = document.createElement("div");
+  ov.className = "modal-overlay";
+  ov.innerHTML = `<div class="modal receipt-view" role="dialog" aria-modal="true" aria-labelledby="rv-title"><h2 id="rv-title">Receipt for ${esc(t.bookingId)}</h2><p>${peso(t.amount)} · ${esc(t.method || "")}${t.reference ? " · Reference " + esc(t.reference) : ""} · ${esc(t.status)}</p><img alt="Receipt uploaded by the guest for ${esc(t.bookingId)}"><div class="modal-actions"><a class="btn-outline" target="_blank" rel="noopener" download="receipt-${esc(t.bookingId)}.jpg">Download</a><button class="btn" type="button" data-close>Close</button></div></div>`;
+  $("img", ov).src = t.receiptImage;
+  $("a", ov).href = t.receiptImage;
+  document.body.append(ov);
+  const close = () => {
+    ov.remove();
+    document.removeEventListener("keydown", keys);
+    back?.focus();
+  };
+  const keys = (e) => {
+    if (e.key === "Escape") close();
+    if (e.key === "Tab") {
+      const els = $$("a, button", ov);
+      const i = els.indexOf(document.activeElement);
+      e.preventDefault();
+      els[(i + (e.shiftKey ? -1 : 1) + els.length) % els.length].focus();
+    }
+  };
+  document.addEventListener("keydown", keys);
+  ov.addEventListener("click", (e) => {
+    if (e.target === ov) close();
+  });
+  $("[data-close]", ov).onclick = close;
+  $("[data-close]", ov).focus();
+}
 // Staff verify external receipts or record refunds already sent; each decision saves reviewer and time.
 $("#transaction-body").onclick = $("#refund-body").onclick = async (e) => {
+  const receiptBtn = e.target.closest("[data-receipt]");
+  if (receiptBtn) {
+    const t = transactions().find((t) => t.id === receiptBtn.dataset.receipt);
+    if (t && t.receiptImage) showReceipt(t);
+    return;
+  }
   const btn = e.target.closest("[data-tx]");
   if (!btn || !isAdmin()) return;
   const ts = transactions(),
@@ -118,7 +154,7 @@ $("#transaction-body").onclick = $("#refund-body").onclick = async (e) => {
   if (
     await confirmDialog({
       title: target === "Verified" ? "Confirm receipt of funds?" : "Reject payment submission?",
-      message: `${t.bookingId}: ${peso(t.amount)}, reference ${t.reference}. Verify against your actual records before proceeding.`,
+      message: `${t.bookingId}: ${peso(t.amount)}, ${t.method || "payment"} (${txRef(t)}). ${t.receiptImage ? "Check the uploaded receipt and verify" : "Verify"} against your actual records before proceeding.`,
       confirmText: target === "Verified" ? "Funds received" : "Reject submission",
       danger: target === "Rejected",
     })

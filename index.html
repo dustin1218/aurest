@@ -67,26 +67,45 @@
             <div class="picker-panel" id="picker-panel" hidden>
               <div class="prow">
                 <div><b>Adults</b><small>Ages 13 or above</small></div>
-                <div class="stepper" data-key="adults" data-min="1" data-max="8">
+                <!-- No upper limits: search results only show room types with enough free rooms. -->
+                <div class="stepper" data-key="adults" data-min="1">
                   <button type="button" data-step="-1" aria-label="Fewer adults">−</button
-                  ><output id="val-adults"></output
-                  ><button type="button" data-step="1" aria-label="More adults">+</button>
+                  ><input
+                    id="val-adults"
+                    type="number"
+                    min="1"
+                    step="1"
+                    inputmode="numeric"
+                    aria-label="Adults"
+                  /><button type="button" data-step="1" aria-label="More adults">+</button>
                 </div>
               </div>
               <div class="prow">
                 <div><b>Children</b><small>Ages 0 to 12</small></div>
-                <div class="stepper" data-key="children" data-min="0" data-max="6">
+                <div class="stepper" data-key="children" data-min="0">
                   <button type="button" data-step="-1" aria-label="Fewer children">−</button
-                  ><output id="val-children"></output
-                  ><button type="button" data-step="1" aria-label="More children">+</button>
+                  ><input
+                    id="val-children"
+                    type="number"
+                    min="0"
+                    step="1"
+                    inputmode="numeric"
+                    aria-label="Children"
+                  /><button type="button" data-step="1" aria-label="More children">+</button>
                 </div>
               </div>
               <div class="prow">
                 <div><b>Rooms</b><small>Number of rooms</small></div>
-                <div class="stepper" data-key="rooms" data-min="1" data-max="5">
+                <div class="stepper" data-key="rooms" data-min="1">
                   <button type="button" data-step="-1" aria-label="Fewer rooms">−</button
-                  ><output id="val-rooms"></output
-                  ><button type="button" data-step="1" aria-label="More rooms">+</button>
+                  ><input
+                    id="val-rooms"
+                    type="number"
+                    min="1"
+                    step="1"
+                    inputmode="numeric"
+                    aria-label="Rooms"
+                  /><button type="button" data-step="1" aria-label="More rooms">+</button>
                 </div>
               </div>
               <label class="prow"

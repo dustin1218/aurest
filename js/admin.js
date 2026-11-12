@@ -1,36 +1,19 @@
 // Front-end demo access check. Production must enforce admin permissions on the server.
 if (!isAdmin()) location.replace("login.html?next=admin.html");
 
-const MAX_EXTRA = 5;
+// Photos are shrunk by readImage() in app.js. There is no set number of extra photos;
+// browser storage (about 5 MB) is the only limit, and saving reports when it is full.
 const ROOM_PHOTOS_KEY = FORM_DRAFT_PREFIX + "room-photos";
 let thumb = null,
   extra = [];
 const f = (id) => document.getElementById(id);
-
-// ----- Read an image and shrink it so it fits in browser storage -----
-function readImage(file, max = 1100) {
-  return new Promise((ok, fail) => {
-    if (!/^image\/(png|jpe?g|webp)$/.test(file.type))
-      return fail(new Error("Please choose a JPG, PNG or WebP image."));
-    const fr = new FileReader();
-    fr.onerror = () => fail(new Error("That file couldn't be read."));
-    fr.onload = () => {
-      const img = new Image();
-      img.onerror = () => fail(new Error("That image couldn't be opened."));
-      img.onload = () => {
-        const k = Math.min(1, max / img.width),
-          c = document.createElement("canvas");
-        c.width = Math.round(img.width * k);
-        c.height = Math.round(img.height * k);
-        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-        ok(c.toDataURL("image/jpeg", 0.82));
-      };
-      img.src = fr.result;
-    };
-    fr.readAsDataURL(file);
-  });
-}
-const prev = (src, label, i, main) =>
+// "1 king bed, 2 single beds" → ["1 king bed", "2 single beds"], the same way as amenities.
+const commaList = (v) =>
+  v
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+const prev =(src, label, i, main) =>
   `<div class="preview${main ? " main" : ""}"><img src="${src}" alt="${label}"><button type="button" data-rm="${i}" aria-label="Remove ${label}">✕</button></div>`;
 function drawPreviews() {
   f("thumb-prev").innerHTML = thumb ? prev(thumb, "thumbnail", 0, true) : "";
@@ -57,10 +40,6 @@ f("more-files").addEventListener("change", async (e) => {
   const files = [...e.target.files];
   setError(f("more-files"), "");
   for (const file of files) {
-    if (extra.length >= MAX_EXTRA) {
-      setError(f("more-files"), `You can add up to ${MAX_EXTRA} extra photos.`);
-      break;
-    }
     try {
       extra.push(await readImage(file));
     } catch (err) {
@@ -89,7 +68,9 @@ const rules = {
   "r-price": (v) => (+v > 0 ? "" : "Enter a price greater than 0."),
   "r-guests": (v) =>
     Number.isInteger(+v) && +v >= 1 && +v <= 10 ? "" : "Enter a whole number from 1 to 10.",
-  "r-bed": (v) => (v.trim() ? "" : "Please enter the bed type."),
+  "r-units": (v) =>
+    v !== "" && Number.isInteger(+v) && +v >= 1 ? "" : "Enter how many of these rooms you have.",
+  "r-bed": (v) => (commaList(v).length ? "" : "Please enter at least one bed type."),
   "r-size": (v) => (+v > 0 ? "" : "Enter the room size in m²."),
   "r-desc": (v) => (v.trim().length >= 10 ? "" : "Write at least 10 characters."),
 };
@@ -167,13 +148,11 @@ f("room-form").addEventListener("submit", async (e) => {
     name: f("r-name").value.trim(),
     price: +f("r-price").value,
     guests: +f("r-guests").value,
-    bed: f("r-bed").value.trim(),
+    units: +f("r-units").value,
+    bed: commaList(f("r-bed").value).join(", "), // room-details.js shows each bed type as its own tag
     size: +f("r-size").value,
     desc: f("r-desc").value.trim(),
-    amenities: f("r-amen")
-      .value.split(",")
-      .map((s) => s.trim())
-      .filter(Boolean),
+    amenities: commaList(f("r-amen").value),
     photo: thumb,
     gallery: [thumb, ...extra],
     added: true,
@@ -218,7 +197,8 @@ f("restore-rooms").addEventListener("click", async () => {
 // ----- Tables -----
 const guestName = (b) => b.guestName || (guests.find((g) => g.id === b.guestId) || {}).name || "—";
 const roomName = (b) =>
-  (getAllRooms().find((r) => r.id === b.roomId) || {}).name || b.roomName || b.roomId;
+  ((getAllRooms().find((r) => r.id === b.roomId) || {}).name || b.roomName || b.roomId) +
+  (roomQty(b) > 1 ? " × " + roomQty(b) : "");
 
 function render() {
   const bk = allBookings(),
@@ -255,7 +235,7 @@ function render() {
     .map(
       (
         r,
-      ) => `<tr><td>${r.id}</td><td><img class="mini-thumb" src="${r.photo}" alt="">${esc(r.name)}</td><td>${r.guests}</td><td>${peso(r.price)}</td>
+      ) => `<tr><td>${r.id}</td><td><img class="mini-thumb" src="${r.photo}" alt="">${esc(r.name)}</td><td>${r.guests}</td><td>${roomUnits(r)}</td><td>${peso(r.price)}</td>
     <td><span class="tag">${r.added ? "Added by admin" : "Default"}</span></td>
     <td><button class="btn-danger" type="button" data-del="${r.id}">Delete</button></td></tr>`,
     )

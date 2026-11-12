@@ -11,13 +11,18 @@ function patchBooking(id, patch) {
   u[id] = { ...u[id], ...patch };
   persist("aurest-booking-updates", u);
 }
+// How many rooms of a type the hotel has (older saved rooms have no count, so they count as one),
+// and how many rooms a booking holds (older bookings hold one).
+const roomUnits = (r) => Math.max(1, Math.floor(+(r && r.units)) || 1);
+const roomQty = (b) => Math.max(1, Math.floor(+b.rooms) || 1);
 // Use the saved booking price, then subtract the staff-approved discount once.
 function bookingTotal(b) {
   return Math.max(
     0,
     (b.total ??
       (getAllRooms().find((r) => r.id === b.roomId)?.price || 0) *
-        nightsBetween(b.checkin, b.checkout)) - (b.discountAmount || 0),
+        nightsBetween(b.checkin, b.checkout) *
+        roomQty(b)) - (b.discountAmount || 0),
   );
 }
 // Only verified receipts and completed refunds affect money held. Pending refunds remain obligations.
@@ -73,9 +78,12 @@ function cancelReservation(b) {
       reference: "Cancellation",
     });
 }
-// Stays overlap when each begins before the other ends; check-out day can be another guest’s check-in.
-function available(roomId, a, z, exclude) {
-  return !allBookings().some(
+// Rooms of this type still free for every night from a to z. Stays overlap when each begins before
+// the other ends; check-out day can be another guest’s check-in. The busiest night decides the count.
+function roomsFree(roomId, a, z, exclude) {
+  const room = getAllRooms().find((r) => r.id === roomId);
+  if (!room || !a || !z || z <= a) return 0;
+  const stays = allBookings().filter(
     (b) =>
       b.id !== exclude &&
       b.roomId === roomId &&
@@ -83,6 +91,30 @@ function available(roomId, a, z, exclude) {
       a < b.checkout &&
       z > b.checkin,
   );
+  let busiest = 0;
+  for (let night = a; night < z; night = nextDayIso(night)) {
+    const held = stays
+      .filter((b) => b.checkin <= night && night < b.checkout)
+      .reduce((n, b) => n + roomQty(b), 0);
+    busiest = Math.max(busiest, held);
+  }
+  return Math.max(0, roomUnits(room) - busiest);
+}
+function nextDayIso(s) {
+  const d = new Date(s + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+function available(roomId, a, z, exclude, need = 1) {
+  return roomsFree(roomId, a, z, exclude) >= need;
+}
+// How a payment was evidenced: typed reference, uploaded receipt image, or cash at the desk.
+function txRef(t) {
+  const parts = [];
+  if (t.reference) parts.push(t.reference);
+  if (t.receiptImage) parts.push("Receipt image");
+  if (!parts.length && t.method === "Cash at front desk") parts.push("Pay at front desk");
+  return parts.join(" · ") || "—";
 }
 function paymentSummary(b) {
   const m = moneyFor(b);
@@ -121,6 +153,7 @@ function financeDialog(title, html, onSave) {
     }
   };
   $("input,button", ov)?.focus();
+  return $("form", ov);
 }
 
 // Carry receipts forward at the saved nightly rate; reset discount review and queue excess money for refund.
@@ -139,9 +172,19 @@ function rescheduleReservation(b, onSaved) {
         z = d.get("end");
       if (a < addDays(0) || z <= a)
         throw Error("Choose future dates with check-out after check-in.");
-      if (!available(b.roomId, a, z, id)) throw Error("This room is unavailable on those dates.");
-      const rate = b.nightlyRate || b.total / nightsBetween(b.checkin, b.checkout);
-      const total = rate * nightsBetween(a, z);
+      const qty = roomQty(b);
+      if (!available(b.roomId, a, z, id, qty))
+        throw Error(
+          qty > 1
+            ? `There aren't ${qty} of these rooms free on those dates.`
+            : "This room is unavailable on those dates.",
+        );
+      // The saved rate is per room, per night. Sample bookings have none, so use the room's price.
+      const rate =
+        b.nightlyRate ||
+        getAllRooms().find((r) => r.id === b.roomId)?.price ||
+        b.total / nightsBetween(b.checkin, b.checkout) / qty;
+      const total = rate * nightsBetween(a, z) * qty;
       const before = moneyFor(b);
       patchBooking(id, {
         checkin: a,

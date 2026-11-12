@@ -71,9 +71,13 @@ $("#profile-form").onsubmit = (e) => {
     profiles[profileUser.email] = { ...p, picture };
     persist("aurest-profiles", profiles);
     persist("aurest-user", { ...profileUser, name: p.name });
-    const registered = store
-      .get("aurest-users", [])
-      .map((u) => (u.email === profileUser.email ? { ...u, name: p.name } : u));
+    // The separate first/last names from sign-up no longer apply once the full name changes.
+    const registered = store.get("aurest-users", []).map((u) => {
+      if (u.email !== profileUser.email) return u;
+      if (u.name === p.name) return u;
+      const { firstName, lastName, ...rest } = u;
+      return { ...rest, name: p.name };
+    });
     persist("aurest-users", registered);
     profileDraft.clear();
     $("#profile-name").textContent = p.name;
