@@ -1,4 +1,4 @@
-﻿// ----- Guests and rooms picker -----
+// ----- Guests and rooms picker -----
 const s0 = getSearch();
 const party = {
   adults: Math.max(1, +s0.adults || 1),
@@ -20,8 +20,8 @@ function updateGuests() {
     s.querySelector('[data-step="-1"]').disabled = party[s.dataset.key] <= +s.dataset.min;
   });
   $("#picker-summary").textContent =
-    `${plural(party.adults, "adult")} Â· ${plural(party.children, "child", "children")} Â· ${plural(party.rooms, "room")}` +
-    (party.pets ? " Â· Pets" : "");
+    `${plural(party.adults, "adult")} \u00b7 ${plural(party.children, "child", "children")} \u00b7 ${plural(party.rooms, "room")}` +
+    (party.pets ? " \u00b7 Pets" : "");
   if (roomSelectionReady) drawRooms();
 }
 const setPanel = (open) => {
@@ -154,7 +154,7 @@ function drawRooms() {
     : "";
   $("#filters").hidden = !expanded;
   $("#chip-box").innerHTML = applied
-    ? `<span class="chip">${fmtDate(applied.checkin)} â€“ ${fmtDate(applied.checkout)} Â· ${plural(applied.adults + applied.children, "guest")} Â· ${plural(applied.rooms, "room")}<button type="button" id="clear" aria-label="Clear search">âœ•</button></span>`
+    ? `<span class="chip">${fmtDate(applied.checkin)} \u2013 ${fmtDate(applied.checkout)} \u00b7 ${plural(applied.adults + applied.children, "guest")} \u00b7 ${plural(applied.rooms, "room")}<button type="button" id="clear" aria-label="Clear search">\u2715</button></span>`
     : "";
   more.hidden = !expanded && list.length <= FEATURED;
   more.textContent = expanded
