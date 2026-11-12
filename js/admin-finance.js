@@ -164,7 +164,9 @@ $("#transaction-body").onclick = $("#refund-body").onclick = async (e) => {
     t.reviewedAt = new Date().toISOString();
     persist("aurest-transactions", ts);
     refreshAdmin();
-    toast(`${peso(t.amount)} for ${t.bookingId} ${target === "Verified" ? "verified" : "rejected"}.`);
+    toast(
+      `${peso(t.amount)} for ${t.bookingId} ${target === "Verified" ? "verified" : "rejected"}.`,
+    );
   }
 };
 // Record original-ID checks and a reviewed discount amount; no ID scans or automatic group discounts.
@@ -261,6 +263,7 @@ $("#bookings-body").addEventListener("change", async (e) => {
   }
   if (status === "Cancelled") cancelReservation(b);
   else {
+    if (status === "Confirmed") patchBooking(id, { confirmedAt: new Date().toISOString() });
     const o = store.get("aurest-status", {});
     o[id] = status;
     persist("aurest-status", o);

@@ -9,8 +9,8 @@ const hotelInfo = {
   payTo: "BDO 0000 0000 0000 or GCash 0900 000 0000 (AUREST Hotel, sample details)",
 };
 
-// Default room types. "units" is how many rooms of that type the hotel has; guests can book
-// several of them in one reservation. Rooms the admin adds are saved separately in the browser.
+// Hardcoded catalog. Each listing is assigned a unique room number below.
+// Rooms added by the admin are stored in this browser.
 const rooms = [
   {
     id: "R001",
@@ -44,7 +44,7 @@ const rooms = [
     price: 5600,
     guests: 4,
     units: 2,
-    bed: "2 beds",
+    bed: "2 queen beds",
     size: 52,
     photo: "images/room-premier.jpg",
     gallery: ["images/room-premier.jpg", "images/room-classic.jpg", "images/room-deluxe.jpg"],
@@ -52,8 +52,6 @@ const rooms = [
     amenities: ["Wi-Fi", "Air conditioning", "Private bathroom", "Sitting area"],
   },
 
-  // R004 to R010 are starter rooms so the admin tables have 10 records.
-  // The photos reuse the three room pictures for now. Drop real photos into images/ and change "photo" and "gallery".
   {
     id: "R004",
     name: "Cozy Single",
@@ -142,23 +140,120 @@ const rooms = [
     size: 60,
     photo: "images/room-classic.jpg",
     gallery: ["images/room-classic.jpg", "images/room-premier.jpg", "images/room-deluxe.jpg"],
-    desc: "Our largest suite, made for big families and special celebrations.",
+    desc: "A spacious suite for families and special celebrations.",
     amenities: ["Wi-Fi", "Air conditioning", "Private bathroom", "Sitting area", "Mini fridge"],
   },
 ];
 
-// Additional hardcoded premium stays; replace reused demo photography with room-specific photos.
-rooms.push(...[
-  ['R011','Junior Suite',8200,2,65,'1 king bed','A generous lounge and a quiet bedroom for longer escapes.'],
-  ['R012','Honeymoon Suite',9800,2,72,'1 king bed','A romantic retreat with a private terrace and soaking tub.'],
-  ['R013','Panorama Suite',11500,3,85,'1 king bed, 1 sofa bed','Wide views, a private balcony and room to unwind.'],
-  ['R014','Two-bedroom Residence',14500,6,110,'2 king beds, 2 single beds','Two bedrooms and a dining area for families travelling together.'],
-  ['R015','Pool Villa',18000,4,130,'2 king beds','A secluded villa with a private plunge pool and outdoor lounge.'],
-  ['R016','Penthouse Suite',24000,4,165,'2 king beds','Top-floor comfort with a spacious terrace and private dining area.'],
-  ['R017','Presidential Suite',35000,6,220,'3 king beds','Three bedrooms, an expansive lounge and space for special occasions.'],
-  ['R018','Royal Residence',48000,8,300,'4 king beds','A four-bedroom residence for an exceptional group getaway.']
-].map(([id,name,price,guests,size,bed,desc])=>({id,name,price,guests,size,bed,desc,units:2,photo:'images/room-premier.jpg',gallery:['images/room-premier.jpg','images/room-deluxe.jpg'],amenities:['Wi-Fi','Air conditioning','Private bathroom','Sitting area']})));
+// Additional premium rooms; generated photos are assigned by room ID below.
+rooms.push(
+  ...[
+    [
+      "R011",
+      "Junior Suite",
+      8200,
+      2,
+      65,
+      "1 king bed",
+      "A generous lounge and a quiet bedroom for longer escapes.",
+    ],
+    [
+      "R012",
+      "Honeymoon Suite",
+      9800,
+      2,
+      72,
+      "1 king bed",
+      "A romantic retreat with a private terrace and soaking tub.",
+    ],
+    [
+      "R013",
+      "Panorama Suite",
+      11500,
+      3,
+      85,
+      "1 king bed, 1 sofa bed",
+      "Wide views, a private balcony and room to unwind.",
+    ],
+    [
+      "R014",
+      "Two-bedroom Residence",
+      14500,
+      6,
+      110,
+      "2 king beds, 2 single beds",
+      "Two bedrooms and a dining area for families travelling together.",
+    ],
+    [
+      "R015",
+      "Pool Villa",
+      18000,
+      4,
+      130,
+      "2 king beds",
+      "A secluded villa with a private plunge pool and outdoor lounge.",
+    ],
+    [
+      "R016",
+      "Penthouse Suite",
+      24000,
+      4,
+      165,
+      "2 king beds",
+      "Top-floor comfort with a spacious terrace and private dining area.",
+    ],
+    [
+      "R017",
+      "Presidential Suite",
+      35000,
+      6,
+      220,
+      "3 king beds",
+      "Three bedrooms, an expansive lounge and space for special occasions.",
+    ],
+    [
+      "R018",
+      "Royal Residence",
+      48000,
+      8,
+      300,
+      "4 king beds",
+      "A four-bedroom residence for an exceptional group getaway.",
+    ],
+  ].map(([id, name, price, guests, size, bed, desc]) => ({
+    id,
+    name,
+    price,
+    guests,
+    size,
+    bed,
+    desc,
+    units: 2,
+    photo: "images/room-premier.jpg",
+    gallery: ["images/room-premier.jpg", "images/room-deluxe.jpg"],
+    amenities: ["Wi-Fi", "Air conditioning", "Private bathroom", "Sitting area"],
+  })),
+);
 
+// Each catalog card now identifies one physical room. Existing booking IDs remain valid.
+rooms.forEach((r, index) => {
+  r.roomNumber = String(101 + index);
+  r.roomType = r.name;
+  r.name = "Room " + r.roomNumber + " - " + r.roomType;
+  r.units = 1;
+  r.photo = "images/rooms/" + r.id.toLowerCase() + ".jpg";
+  r.gallery = [r.photo, "images/rooms/" + r.id.toLowerCase() + "-gallery.jpg"];
+  const extras = {
+    R012: ["Private terrace", "Soaking tub"],
+    R013: ["Balcony", "City view"],
+    R014: ["Dining area"],
+    R015: ["Private pool"],
+    R016: ["Private terrace", "Dining area"],
+    R017: ["Dining area"],
+    R018: ["Dining area"],
+  };
+  r.amenities.push(...(extras[r.id] || []));
+});
 // Demo accounts for testing. New guest accounts are saved in the browser by register.html.
 const users = [
   {

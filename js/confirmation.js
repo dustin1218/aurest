@@ -14,6 +14,8 @@ function showConfirmation(b) {
   const n = nightsBetween(b.checkin, b.checkout),
     qty = roomQty(b);
   const total = bookingTotal(b);
+  $("#room-breakdown").innerHTML = roomBreakdown(b);
+  $("#receipt-action").innerHTML = receiptLink(b);
   const rate = b.nightlyRate || (r ? r.price : Math.round(total / n / qty)); // per room, per night
 
   document.title = `Confirmation ${b.id} | AUREST`;
@@ -22,15 +24,19 @@ function showConfirmation(b) {
   $("#c-img").src = r ? r.photo : "images/room-classic.jpg";
   $("#c-img").alt = b.roomName;
   $("#c-room").textContent = !b.roomItems && qty > 1 ? `${b.roomName} × ${qty}` : b.roomName;
-  $("#c-meta").textContent = b.roomItems ? plural(qty, "selected room") : r ? `${r.bed} · ${r.size} m² · ${r.guests} guests per room` : "";
+  $("#c-meta").textContent = b.roomItems
+    ? plural(qty, "selected room")
+    : r
+      ? `${r.bed} · ${r.size} m² · ${r.guests} guests per room`
+      : "";
   $("#c-in").textContent = fmtDate(b.checkin);
   $("#c-out").textContent = fmtDate(b.checkout);
   $("#c-guests").textContent = b.children
     ? `${plural(b.adults, "adult")}, ${plural(b.children, "child", "children")}`
     : plural(b.guests, "guest");
-  $("#c-calc").textContent =
-    `${peso(rate)} × ${plural(n, "night")}` + (qty > 1 ? ` × ${plural(qty, "room")}` : "");
-  $("#c-sub").textContent = $("#c-total").textContent = peso(total);
+  $("#c-calc").textContent = "Room subtotal";
+  $("#c-sub").textContent = peso(roomChargeLines(b).reduce((sum, i) => sum + i.subtotal, 0));
+  $("#c-total").textContent = peso(total);
 
   // The headline matches the booking's real status, so the page never promises more than the hotel has agreed to.
   const note =

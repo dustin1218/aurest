@@ -1,0 +1,131 @@
+{
+  "method": "Built-in image_gen, main photo used as reference",
+  "images": [
+    {
+      "id": "R001",
+      "name": "Classic Room",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Classic Room depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: one queen bed, modest 28 square metre cozy room. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-a40c3d9c-118d-4f52-8ec8-294a44e15f7b.png",
+      "file": "images/rooms/r001-gallery.jpg"
+    },
+    {
+      "id": "R002",
+      "name": "Deluxe Room",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Deluxe Room depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: one king bed, elegant 36 square metre room with desk. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-f50fc87b-1978-49e7-8afd-3bfd054ae59d.png",
+      "file": "images/rooms/r002-gallery.jpg"
+    },
+    {
+      "id": "R003",
+      "name": "Premier Suite",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Premier Suite depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: two queen beds, spacious 52 square metre suite with sitting area. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-7f904cce-3795-4dbe-8b65-b618edc2ce8e.png",
+      "file": "images/rooms/r003-gallery.jpg"
+    },
+    {
+      "id": "R004",
+      "name": "Cozy Single",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Cozy Single depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: one single bed, compact 18 square metre budget room. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-30d0de3a-cd73-4f4e-881a-b7224166aecf.png",
+      "file": "images/rooms/r004-gallery.jpg"
+    },
+    {
+      "id": "R005",
+      "name": "Standard Twin",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Standard Twin depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: two separate single beds, simple 26 square metre room. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-57e060e9-1e72-45b6-acd5-f49b61f09547.png",
+      "file": "images/rooms/r005-gallery.jpg"
+    },
+    {
+      "id": "R006",
+      "name": "Superior Room",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Superior Room depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: one queen bed, bright 30 square metre room with mini fridge. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-ec101f25-d2d5-449c-a031-32ad2ff58899.png",
+      "file": "images/rooms/r006-gallery.jpg"
+    },
+    {
+      "id": "R007",
+      "name": "Garden View Room",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Garden View Room depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: one queen bed and one single bed, garden view window seat. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-b40a8e4c-ee59-4fc3-985c-28896a69774d.png",
+      "file": "images/rooms/r007-gallery.jpg"
+    },
+    {
+      "id": "R008",
+      "name": "Family Room",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Family Room depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: two queen beds, welcoming 44 square metre room. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-f0394c36-b558-4402-9615-c7fe8fa68f95.png",
+      "file": "images/rooms/r008-gallery.jpg"
+    },
+    {
+      "id": "R009",
+      "name": "Executive Suite",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Executive Suite depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: one king bed, separate business lounge and desk. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-ccf8d3c1-0247-4cd8-9930-cd8e9795a346.png",
+      "file": "images/rooms/r009-gallery.jpg"
+    },
+    {
+      "id": "R010",
+      "name": "Family Suite",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Family Suite depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: one king bed and two single beds, generous family suite. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-0a731e8d-bef4-4538-814f-0a0431767a33.png",
+      "file": "images/rooms/r010-gallery.jpg"
+    },
+    {
+      "id": "R011",
+      "name": "Junior Suite",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Junior Suite depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: one king bed, generous separate lounge. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-3cbd2494-5575-47b4-b581-8681177704a0.png",
+      "file": "images/rooms/r011-gallery.jpg"
+    },
+    {
+      "id": "R012",
+      "name": "Honeymoon Suite",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Honeymoon Suite depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: one king bed, romantic private terrace and soaking tub. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-c1ac2257-c12a-4814-9156-50263c4ce44b.png",
+      "file": "images/rooms/r012-gallery.jpg"
+    },
+    {
+      "id": "R013",
+      "name": "Panorama Suite",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Panorama Suite depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: one king bed and sofa bed, panoramic city balcony. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-08600125-1215-425c-9471-d5d05dc8713d.png",
+      "file": "images/rooms/r013-gallery.jpg"
+    },
+    {
+      "id": "R014",
+      "name": "Two-bedroom Residence",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Two-bedroom Residence depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: two bedrooms, two king beds and two single beds, dining area. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-ea4d948b-2cad-4be3-a93d-5084e83e5250.png",
+      "file": "images/rooms/r014-gallery.jpg"
+    },
+    {
+      "id": "R015",
+      "name": "Pool Villa",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Pool Villa depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: two king bedrooms and private tropical plunge pool. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-66fd4b38-e8df-458b-8d21-4d9606398d9a.png",
+      "file": "images/rooms/r015-gallery.jpg"
+    },
+    {
+      "id": "R016",
+      "name": "Penthouse Suite",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Penthouse Suite depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: two king bedrooms, top-floor terrace, private dining, very luxurious. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-8f188920-1ba7-4ab6-8a57-de51e65f4a75.png",
+      "file": "images/rooms/r016-gallery.jpg"
+    },
+    {
+      "id": "R017",
+      "name": "Presidential Suite",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Presidential Suite depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: three king bedrooms, expansive luxury lounge. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-90bfe79e-9bbf-460c-9ce1-033978b654be.png",
+      "file": "images/rooms/r017-gallery.jpg"
+    },
+    {
+      "id": "R018",
+      "name": "Royal Residence",
+      "prompt": "Create a second gallery photograph of the SAME AUREST Royal Residence depicted in the reference photo. Preserve room identity, bed configuration, materials, furniture and architectural design from the reference. Show a different plausible eye-level camera angle focusing on the seating/window side or room amenities with bedroom still visible. Room specification: four king bedrooms, palatial modern residence and private dining. Photorealistic hotel photography, soft daylight, landscape composition. No people, text, logos, or collage. One full image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-a1e13c49-7d01-427c-bae2-b3d3b9c15a46.png",
+      "file": "images/rooms/r018-gallery.jpg"
+    }
+  ]
+}

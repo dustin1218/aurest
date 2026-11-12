@@ -9,7 +9,7 @@ if (!room) {
     n = nightsBetween(s.checkin, s.checkout),
     qty = Math.max(1, +s.rooms || 1),
     left = roomsFree(room.id, s.checkin, s.checkout),
-    free = left >= qty;
+    free = left >= 1;
   const bookLabel = free
     ? qty > 1
       ? "Choose rooms separately"
@@ -38,8 +38,8 @@ if (!room) {
         <div class="meta">${room.guests} guests · ${esc(room.bed)} · ${room.size} m²</div>
         <p class="lead">${esc(room.desc)}</p>
         <span class="price">${peso(room.price)} <small>/ night</small></span>
-        <div class="stay-line">Your stay: <b>${fmtDate(s.checkin)} – ${fmtDate(s.checkout)}</b> (${plural(n, "night")}${qty > 1 ? ", " + plural(qty, "room") : ""}) · Total <b>${peso(room.price * n * qty)}</b><br>${plural(left, "room")} of this type free for these dates · <a href="index.html#home">Change dates or rooms</a></div>
-        <button class="btn-outline block" id="add-selection" type="button"${qty > 1 ? "" : " hidden"}${left ? "" : " disabled"}>Select this room type</button>
+        <div class="stay-line">Your stay: <b>${fmtDate(s.checkin)} – ${fmtDate(s.checkout)}</b> (${plural(n, "night")}) · This room total <b>${peso(room.price * n)}</b><br>${plural(left, "room")} available for these dates · <a href="index.html#home">Change dates or rooms</a></div>
+        <button class="btn-outline block" id="add-selection" type="button"${qty > 1 ? "" : " hidden"}${left ? "" : " disabled"}>Select this room</button>
         <p${qty > 1 ? "" : " hidden"}>Select this room, then return to the room list to add other rooms and book them together.</p>
         <button class="btn block" id="reserve" type="button"${qty > 1 ? " hidden" : ""}${free ? "" : " disabled"}>${bookLabel}</button>
       </aside>
@@ -57,7 +57,9 @@ if (!room) {
     const selection = new Set(store.get("aurest-room-selection", []));
     const maxRooms = Math.max(1, +getSearch().rooms || 1);
     if (!selection.has(room.id) && selection.size >= maxRooms) {
-      toast(`You selected ${maxRooms} rooms already. Change the room count in Guests and rooms to add more.`);
+      toast(
+        `You selected ${maxRooms} rooms already. Change the room count in Guests and rooms to add more.`,
+      );
       return;
     }
     selection.add(room.id);
@@ -65,13 +67,14 @@ if (!room) {
     location.href = "index.html#rooms";
   });
   $("#reserve").addEventListener("click", () => {
+    if (qty > 1 || !free) return;
     store.set("aurest-draft", {
       roomId: room.id,
       checkin: s.checkin,
       checkout: s.checkout,
       adults: s.adults,
       children: s.children,
-      rooms: qty,
+      rooms: 1,
     });
     location.href = getUser() ? "booking.html" : "login.html?next=booking.html";
   });

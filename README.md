@@ -4,7 +4,7 @@ Open `index.html` in a browser or serve this directory with any static web serve
 
 ## Payments and reservations
 
-- Each room type has a number of rooms (`units` in `js/data.js`, or "Number of rooms" when an admin adds a room). Guests choose any number of adults, children and rooms. A search only lists types with enough rooms free on every night of the stay whose combined capacity fits the group, and each room needs at least one adult. One booking holds several rooms of one type; the booking and review pages check free rooms and capacity again before saving.
+- Each catalog card is one numbered room (101-118), with one unit of availability. Guests requesting multiple rooms select distinct cards, up to the requested count; checkout requires exactly that count. Lowering the count removes the most recently selected excess rooms. Search supports nightly price range, capacity, beds and amenities. Existing reservations retain their IDs and saved amounts.
 - Guests choose a 30% deposit or full payment on the review page. This is a manual transfer workflow: submit the amount and method in My bookings, with a transfer reference, a receipt image, or both. Cash at the front desk needs neither. Staff open uploaded receipts and verify them in Admin → Payments. Submissions alone never count as money received.
 - The booking email always comes from the signed-in account. The contact number is optional; when given it must be an 11-digit number starting with 09, shown as `0912 345 6789`.
 - Signing in to a different account in another tab signs this tab's account out, with a notice. Private/incognito windows have separate storage and cannot be linked without a server.
@@ -22,7 +22,7 @@ This is a local browser prototype. Accounts, roles, transactions and verificatio
 
 ## Validation
 
-Run `node tests/finance.test.cjs` from the project root. It checks JavaScript syntax, submitted versus verified payments, deposit balances, cancellation windows and fees, refund requests, duplicate refunds, refund completion, free rooms per room type, and multi-room totals.
+Run `node tests/finance.test.cjs` and `node tests/multi-room.test.cjs` from the project root. It checks JavaScript syntax, submitted versus verified payments, deposit balances, cancellation windows and fees, refund requests, duplicate refunds, refund completion, free rooms per room type, and multi-room totals.
 
 Browser checks also covered booking → review → confirmation, guest payment submission → admin verification, rescheduling with payment carry-forward, cancellation refunds, profile saves, check-in range shading and locked check-in dates during check-out selection.
 
@@ -74,3 +74,9 @@ npx prettier@3.6.2 --check "*.html" "js/*.js" "css/*.css" "tests/*.cjs" .prettie
 ```
 
 Use `--write` instead of `--check` to apply the configured style. This is a development tool and is not needed to run the site.
+
+## Room photos and booking receipts
+
+- `images/rooms/` contains generated, optimized JPEG photography: a main view and a matching second gallery view for each room. These are concept images for this demo hotel. Prompts and source references are in `design/room-photos.json` and `design/room-gallery-photos.json`; generation used the built-in image tool.
+- Booking summaries list each room, its nightly rate, nights and subtotal. New bookings store room labels and rates so catalog edits cannot change a receipt. Older bookings without itemized rates allocate their saved total across their rooms.
+- After staff confirm a booking, **View receipt** appears in My bookings, the confirmation page and the admin booking row. Existing ID/payment prerequisites still apply. `receipt.html` shows room charges, approved discount, verified payments, refunds and balance. The owner or signed-in admin can print it or save it as PDF. Pending/cancelled bookings have no receipt. This remains a browser-storage prototype.

@@ -22,7 +22,11 @@ function updateGuests() {
   $("#picker-summary").textContent =
     `${plural(party.adults, "adult")} \u00b7 ${plural(party.children, "child", "children")} \u00b7 ${plural(party.rooms, "room")}` +
     (party.pets ? " \u00b7 Pets" : "");
-  if (roomSelectionReady) drawRooms();
+  if (roomSelectionReady) {
+    store.set("aurest-search", { ...getSearch(), ...party });
+    if (applied) applied = { ...applied, ...party };
+    drawRooms();
+  }
 }
 const setPanel = (open) => {
   panel.hidden = !open;
@@ -131,28 +135,41 @@ let expanded = false,
   applied = null;
 
 function drawRooms() {
+  for (const id of selected) if (!getRooms().some((r) => r.id === id)) selected.delete(id);
+  if (selected.size > party.rooms) {
+    const keep = [...selected].slice(0, party.rooms);
+    selected.clear();
+    keep.forEach((id) => selected.add(id));
+    toast("Room count reduced. The most recently selected extra rooms were removed.");
+  }
   if (party.rooms <= 1) selected.clear();
   // After a date search, only offer room types with enough free rooms for the whole stay,
   // whose combined capacity fits the group.
   const free = {};
   let list = getRooms().filter((r) => {
     if (r.guests < +cap.value) return false;
+    const min = +$("#price-min").value || 0,
+      max = $("#price-max").value === "" ? Infinity : +$("#price-max").value;
+    $("#filter-error").textContent =
+      max < min ? "Maximum price must be at least the minimum price." : "";
+    if (r.price < min || r.price > max) return false;
+    if (!r.bed.toLowerCase().includes($("#bed-filter").value)) return false;
+    if ($("#amenity-filter").value && !r.amenities.includes($("#amenity-filter").value))
+      return false;
     if (!applied) return true;
     free[r.id] = roomsFree(r.id, applied.checkin, applied.checkout);
-    return (
-      free[r.id] >= 1
-    );
+    return free[r.id] >= 1;
   });
   if (sort.value === "low") list.sort((a, b) => a.price - b.price);
   if (sort.value === "high") list.sort((a, b) => b.price - a.price);
   const shown = expanded ? list : list.slice(0, FEATURED);
   gallery.innerHTML = shown.length
     ? shown.map((r) => selectableCard(r, applied ? `${free[r.id]} left` : "")).join("")
-    : `<div class="empty"><h3>${applied ? "No rooms are free for that stay" : `No rooms fit ${cap.value} guests`}</h3><p>${applied ? "Try different dates, fewer guests or more rooms." : "Try fewer guests or clear your filters."}</p><button class="btn" type="button" id="reset">Show all rooms</button></div>`;
+    : `<div class="empty"><h3>No rooms match your filters</h3><p>Try different dates or reset the room filters.</p><button class="btn" type="button" id="reset">Show all rooms</button></div>`;
   $("#count").textContent = shown.length
     ? `Showing ${shown.length} of ${plural(list.length, "room")}`
     : "";
-  $("#filters").hidden = !expanded;
+  $("#filters").hidden = false;
   $("#chip-box").innerHTML = applied
     ? `<span class="chip">${fmtDate(applied.checkin)} \u2013 ${fmtDate(applied.checkout)} \u00b7 ${plural(applied.adults + applied.children, "guest")} \u00b7 ${plural(applied.rooms, "room")}<button type="button" id="clear" aria-label="Clear search">\u2715</button></span>`
     : "";
@@ -165,8 +182,7 @@ function drawRooms() {
   const rb = $("#reset");
   if (rb)
     rb.addEventListener("click", () => {
-      cap.value = 1;
-      sort.value = "recommended";
+      resetRoomFilters();
       applied = null;
       drawRooms();
     });
@@ -301,53 +317,151 @@ $("#contact-form").addEventListener("submit", (e) => {
   start();
 })();
 
-function selectableCard(r,note) {
-  if (party.rooms <= 1) return roomCard(r,note);
-  const checked=selected.has(r.id);
-  return roomCard(r,note).replace('<article class="card">', '<article class="card selectable'+(checked?' selected':'')+'" data-room="'+r.id+'"><label class="room-select"><input type="checkbox" data-select="'+r.id+'" '+(checked?'checked':'')+'><span>Select '+esc(r.name)+'</span></label>');
+function selectableCard(r, note) {
+  if (party.rooms <= 1) return roomCard(r, note);
+  const checked = selected.has(r.id);
+  return roomCard(r, note).replace(
+    '<article class="card">',
+    '<article class="card selectable' +
+      (checked ? " selected" : "") +
+      '" data-room="' +
+      r.id +
+      '"><label class="room-select"><input type="checkbox" data-select="' +
+      r.id +
+      '" ' +
+      (checked ? "checked" : "") +
+      "><span>Select " +
+      esc(r.name) +
+      "</span></label>",
+  );
 }
 function drawSelection() {
   $(".selection-bar").hidden = party.rooms <= 1;
   $("#selection-help").hidden = party.rooms <= 1;
-  for (const id of selected) if (!getRooms().some(r=>r.id===id)) selected.delete(id);
-  store.set('aurest-room-selection',[...selected]);
-  const list=getRooms().filter(r=>selected.has(r.id));
-  const s=applied || getSearch();
-  const total=list.reduce((sum,r)=>sum+r.price,0)*nightsBetween(s.checkin,s.checkout);
-  $("#selection-summary").textContent = `${list.length} of ${party.rooms} rooms selected` + (list.length ? ` - ${list.map(r => r.name).join(", ")} - ${peso(total)} total for ${plural(nightsBetween(s.checkin, s.checkout), "night")}` : "");
-  $('#book-selected').textContent = list.length ? 'Book ' + plural(list.length, 'selected room') : 'Book selected rooms';
-  $('#book-selected').disabled = list.length !== party.rooms;
-  $('#clear-selection').disabled=!list.length;
+  for (const id of selected) if (!getRooms().some((r) => r.id === id)) selected.delete(id);
+  store.set("aurest-room-selection", [...selected]);
+  const list = getRooms().filter((r) => selected.has(r.id));
+  const s = { checkin: cin.value, checkout: cout.value, ...party };
+  const total = list.reduce((sum, r) => sum + r.price, 0) * nightsBetween(s.checkin, s.checkout);
+  $("#selection-summary").textContent =
+    `${list.length} of ${party.rooms} rooms selected` +
+    (list.length
+      ? ` - ${list.map((r) => r.name).join(", ")} - ${peso(total)} total for ${plural(nightsBetween(s.checkin, s.checkout), "night")}`
+      : "");
+  $("#book-selected").textContent = list.length
+    ? "Book " + plural(list.length, "selected room")
+    : "Book selected rooms";
+  $("#book-selected").disabled = list.length !== party.rooms;
+  $("#clear-selection").disabled = !list.length;
+  $("#selection-details").hidden = !list.length;
+  $("#selection-prices").innerHTML = roomBreakdown({
+    ...s,
+    roomItems: list.map((r) => ({ roomId: r.id, quantity: 1 })),
+  });
+  const atLimit = selected.size >= party.rooms;
+  $$("[data-select]", gallery).forEach((input) => {
+    input.disabled = atLimit && !selected.has(input.dataset.select);
+    input.closest(".card").classList.toggle("selection-disabled", input.disabled);
+  });
 }
-gallery.addEventListener('click',e=>{
-  if(e.target.closest('a, label, input')) return;
-  const card=e.target.closest('[data-room]');
-  if(card) { const input=card.querySelector('input'); input.click(); }
+gallery.addEventListener("click", (e) => {
+  if (e.target.closest("a, label, input")) return;
+  const card = e.target.closest("[data-room]");
+  if (card) {
+    const input = card.querySelector("input");
+    input.click();
+  }
 });
-gallery.addEventListener('change',e=>{
-  const id=e.target.dataset.select;
-  if(!id) return;
+gallery.addEventListener("change", (e) => {
+  const id = e.target.dataset.select;
+  if (!id) return;
   if (e.target.checked && selected.size >= party.rooms) {
     e.target.checked = false;
-    toast(`You selected ${party.rooms} rooms. Change the room count in Guests and rooms to select more.`);
+    toast(
+      `You selected ${party.rooms} rooms. Change the room count in Guests and rooms to select more.`,
+    );
     return;
   }
-  if(e.target.checked) selected.add(id); else selected.delete(id);
-  e.target.closest('.card').classList.toggle('selected',e.target.checked);
+  if (e.target.checked) selected.add(id);
+  else selected.delete(id);
+  e.target.closest(".card").classList.toggle("selected", e.target.checked);
   drawSelection();
 });
-$('#clear-selection').addEventListener('click',()=>{selected.clear();drawRooms();});
-$('#book-selected').addEventListener('click',()=>{
-  if (party.rooms <= 1) return;
-  const s={checkin:cin.value, checkout:cout.value, ...party};
-  const list=getRooms().filter(r=>selected.has(r.id));
-  if (list.length !== party.rooms) { toast(`Select exactly ${plural(party.rooms, 'room')} to continue.`); return; }
-  if(!s.checkin || !s.checkout || s.checkin<addDays(0) || s.checkout<=s.checkin) {toast('Please search for valid future dates first.');return;}
-  if(list.length>s.adults) {toast('Each selected room needs at least one adult. Update your guests in Search.');return;}
-  if(list.reduce((sum,r)=>sum+r.guests,0)<s.adults+s.children) {toast('Select more rooms or larger rooms to fit your group.');return;}
-  const d={...s,roomId:list[0].id,rooms:party.rooms,roomItems:list.map(r=>({roomId:r.id,quantity:1}))};
-  if(!selectionFree(d,s.checkin,s.checkout)) {toast('A selected room is unavailable for these dates. Change your selection or search again.');return;}
-  store.set('aurest-search',s);
-  store.set('aurest-draft',d);
-  location.href=getUser()?'booking.html':'login.html?next=booking.html';
+$("#change-room-count").addEventListener("click", (e) => {
+  e.stopPropagation();
+  $("#search").scrollIntoView({ behavior: "smooth", block: "center" });
+  setPanel(true);
+  $("#val-rooms").focus();
 });
+$("#clear-selection").addEventListener("click", () => {
+  selected.clear();
+  drawRooms();
+});
+$("#book-selected").addEventListener("click", () => {
+  if (party.rooms <= 1) return;
+  const s = { checkin: cin.value, checkout: cout.value, ...party };
+  const list = getRooms().filter((r) => selected.has(r.id));
+  if (list.length !== party.rooms) {
+    toast(`Select exactly ${plural(party.rooms, "room")} to continue.`);
+    return;
+  }
+  if (!s.checkin || !s.checkout || s.checkin < addDays(0) || s.checkout <= s.checkin) {
+    toast("Please search for valid future dates first.");
+    return;
+  }
+  if (list.length > s.adults) {
+    toast("Each selected room needs at least one adult. Update your guests in Search.");
+    return;
+  }
+  if (list.reduce((sum, r) => sum + r.guests, 0) < s.adults + s.children) {
+    toast("Select more rooms or larger rooms to fit your group.");
+    return;
+  }
+  const d = {
+    ...s,
+    roomId: list[0].id,
+    rooms: party.rooms,
+    roomItems: list.map((r) => ({ roomId: r.id, quantity: 1 })),
+  };
+  if (!selectionFree(d, s.checkin, s.checkout)) {
+    toast("A selected room is unavailable for these dates. Change your selection or search again.");
+    return;
+  }
+  store.set("aurest-search", s);
+  store.set("aurest-draft", d);
+  location.href = getUser() ? "booking.html" : "login.html?next=booking.html";
+});
+
+function resetRoomFilters() {
+  ["price-min", "price-max", "bed-filter", "amenity-filter"].forEach(
+    (id) => ($("#" + id).value = ""),
+  );
+  cap.value = "1";
+  sort.value = "recommended";
+  $("#filter-error").textContent = "";
+}
+$("#amenity-filter").innerHTML += [...new Set(getRooms().flatMap((r) => r.amenities))]
+  .sort()
+  .map((a) => '<option value="' + esc(a) + '">' + esc(a) + "</option>")
+  .join("");
+["price-min", "price-max", "bed-filter", "amenity-filter"].forEach((id) =>
+  $("#" + id).addEventListener("input", () => {
+    expanded = true;
+    drawRooms();
+  }),
+);
+$("#reset-filters").addEventListener("click", () => {
+  resetRoomFilters();
+  drawRooms();
+});
+// Keep detail-page room count and dates consistent with the current picker.
+gallery.addEventListener(
+  "click",
+  (e) => {
+    if (e.target.closest("a"))
+      store.set("aurest-search", { checkin: cin.value, checkout: cout.value, ...party });
+  },
+  true,
+);
+
+[cin, cout].forEach((input) => input.addEventListener("change", drawSelection));

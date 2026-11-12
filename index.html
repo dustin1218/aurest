@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Home | AUREST</title>
-    <link rel="stylesheet" href="css/style.css?v=multi-room-2" />
+    <link rel="stylesheet" href="css/style.css?v=rooms-receipts-1" />
   </head>
   <body data-nav="home" data-page="home">
     <header id="site-header"></header>
@@ -135,6 +135,8 @@
               <option value="2">2 or more guests</option>
               <option value="3">3 or more guests</option>
               <option value="4">4 or more guests</option>
+              <option value="6">6 or more guests</option>
+              <option value="8">8 or more guests</option>
             </select>
           </div>
           <div class="field">
@@ -145,12 +147,54 @@
               <option value="high">Price: high to low</option>
             </select>
           </div>
+          <div class="field">
+            <label for="price-min">Min price / night</label
+            ><input id="price-min" type="number" min="0" placeholder="0" />
+          </div>
+          <div class="field">
+            <label for="price-max">Max price / night</label
+            ><input id="price-max" type="number" min="0" placeholder="Any price" />
+          </div>
+          <div class="field">
+            <label for="bed-filter">Bed type</label
+            ><select id="bed-filter">
+              <option value="">Any bed</option>
+              <option value="single">Single</option>
+              <option value="queen">Queen</option>
+              <option value="king">King</option>
+              <option value="sofa">Sofa bed</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="amenity-filter">Amenity</label
+            ><select id="amenity-filter">
+              <option value="">Any amenity</option>
+            </select>
+          </div>
+          <button class="btn-outline" type="button" id="reset-filters">Reset filters</button>
+          <p id="filter-error" role="status"></p>
           <div id="chip-box"></div>
         </div>
         <div class="result-bar"><span id="count" role="status" aria-live="polite"></span></div>
-        <p id="selection-help" hidden>Select a card to add one room of that type. You can combine different types in one reservation. Use View room for photos and details.</p>
+        <p id="selection-help" hidden>
+          Each card is one numbered room. Select different rooms for your reservation. Use View room
+          for photos and details.
+        </p>
         <div class="gallery" id="room-gallery"></div>
-        <div class="selection-bar" hidden><div id="selection-summary" role="status" aria-live="polite"></div><button class="btn-outline" type="button" id="clear-selection">Clear selection</button><button class="btn" type="button" id="book-selected" disabled>Book selected rooms</button></div>
+        <div class="selection-bar" hidden>
+          <div class="selection-info">
+            <div id="selection-summary" role="status" aria-live="polite"></div>
+            <details id="selection-details">
+              <summary>Price breakdown</summary>
+              <div id="selection-prices"></div>
+            </details>
+          </div>
+          <button class="btn-outline" type="button" id="change-room-count">Change room count</button
+          ><button class="btn-outline" type="button" id="clear-selection">Clear selection</button
+          ><button class="btn" type="button" id="book-selected" disabled>
+            Book selected rooms
+          </button>
+        </div>
         <div class="more">
           <button type="button" class="btn-outline" id="more" aria-expanded="false"></button>
         </div>
@@ -259,9 +303,9 @@
     </main>
     <footer id="site-footer"></footer>
     <!-- Load shared data and helpers before the script for this page; script order matters. -->
-    <script src="js/data.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/finance.js"></script>
-    <script src="js/home.js?v=multi-room-3"></script>
+    <script src="js/data.js?v=rooms-receipts-1"></script>
+    <script src="js/app.js?v=rooms-receipts-1"></script>
+    <script src="js/finance.js?v=rooms-receipts-1"></script>
+    <script src="js/home.js?v=rooms-receipts-1"></script>
   </body>
 </html>

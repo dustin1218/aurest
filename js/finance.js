@@ -86,7 +86,7 @@ function roomsFree(roomId, a, z, exclude) {
   const stays = allBookings().filter(
     (b) =>
       b.id !== exclude &&
-      bookingItems(b).some(i => i.roomId === roomId) &&
+      bookingItems(b).some((i) => i.roomId === roomId) &&
       b.status !== "Cancelled" &&
       a < b.checkout &&
       z > b.checkin,
@@ -95,7 +95,14 @@ function roomsFree(roomId, a, z, exclude) {
   for (let night = a; night < z; night = nextDayIso(night)) {
     const held = stays
       .filter((b) => b.checkin <= night && night < b.checkout)
-      .reduce((n, b) => n + bookingItems(b).filter(i => i.roomId === roomId).reduce((sum,i) => sum + i.quantity, 0), 0);
+      .reduce(
+        (n, b) =>
+          n +
+          bookingItems(b)
+            .filter((i) => i.roomId === roomId)
+            .reduce((sum, i) => sum + i.quantity, 0),
+        0,
+      );
     busiest = Math.max(busiest, held);
   }
   return Math.max(0, roomUnits(room) - busiest);
@@ -160,7 +167,9 @@ function financeDialog(title, html, onSave) {
 function rescheduleReservation(b, onSaved) {
   const id = b.id;
   // Say so before the person picks dates, not after.
-  if (transactions().some((t) => t.bookingId === id && ["Pending", "Submitted"].includes(t.status))) {
+  if (
+    transactions().some((t) => t.bookingId === id && ["Pending", "Submitted"].includes(t.status))
+  ) {
     toast("Submitted payments and pending refunds must be reviewed before changing dates.");
     return;
   }
@@ -173,7 +182,7 @@ function rescheduleReservation(b, onSaved) {
       if (a < addDays(0) || z <= a)
         throw Error("Choose future dates with check-out after check-in.");
       const qty = roomQty(b);
-      if (!bookingItems(b).every(i => available(i.roomId, a, z, id, i.quantity)))
+      if (!bookingItems(b).every((i) => available(i.roomId, a, z, id, i.quantity)))
         throw Error(
           qty > 1
             ? `There aren't ${qty} of these rooms free on those dates.`
@@ -184,7 +193,12 @@ function rescheduleReservation(b, onSaved) {
         b.nightlyRate ||
         getAllRooms().find((r) => r.id === b.roomId)?.price ||
         b.total / nightsBetween(b.checkin, b.checkout) / qty;
-      const total = rate * nightsBetween(a, z) * qty;
+      const total =
+        Math.round(
+          roomChargeLines(b).reduce((sum, i) => sum + i.nightlyRate * i.quantity, 0) *
+            nightsBetween(a, z) *
+            100,
+        ) / 100;
       const before = moneyFor(b);
       patchBooking(id, {
         checkin: a,
@@ -209,7 +223,9 @@ function rescheduleReservation(b, onSaved) {
           reference: "Shorter rescheduled stay",
         });
       onSaved();
-      toast(`${id} moved to ${fmtDate(a)} – ${fmtDate(z)}. It is Pending until the hotel confirms it.`);
+      toast(
+        `${id} moved to ${fmtDate(a)} – ${fmtDate(z)}. It is Pending until the hotel confirms it.`,
+      );
     },
   );
   // Check-out can never be before check-in, and moves along when check-in changes.
@@ -230,19 +246,92 @@ function rescheduleReservation(b, onSaved) {
 
 // Legacy single-type reservations and mixed selections share the same inventory checks.
 function bookingItems(b) {
-  return b.roomItems || [{roomId:b.roomId, quantity:roomQty(b)}];
+  return b.roomItems || [{ roomId: b.roomId, quantity: roomQty(b) }];
 }
 function selectionRoom(d) {
   if (!d) return null;
-  if (!d.roomItems) return getRooms().find(r=>r.id===d.roomId);
-  const items=d.roomItems.map(i=>({...i,room:getRooms().find(r=>r.id===i.roomId)}));
-  if (!items.length || items.some(i=>!i.room || !Number.isInteger(i.quantity) || i.quantity<1)) return null;
-  const qty=items.reduce((s,i)=>s+i.quantity,0);
-  return {...items[0].room, name:items.map(i=>i.room.name+' × '+i.quantity).join(', '),
-    price:items.reduce((s,i)=>s+i.room.price*i.quantity,0)/qty,
-    guests:items.reduce((s,i)=>s+i.room.guests*i.quantity,0)/qty,
-    bed:'Selected rooms', size:items.reduce((s,i)=>s+i.room.size*i.quantity,0)};
+  if (!d.roomItems) return getRooms().find((r) => r.id === d.roomId);
+  const items = d.roomItems.map((i) => ({ ...i, room: getRooms().find((r) => r.id === i.roomId) }));
+  if (
+    !items.length ||
+    items.some((i) => !i.room || !Number.isInteger(i.quantity) || i.quantity < 1)
+  )
+    return null;
+  const qty = items.reduce((s, i) => s + i.quantity, 0);
+  return {
+    ...items[0].room,
+    name: items.map((i) => i.room.name + (i.quantity > 1 ? " × " + i.quantity : "")).join(", "),
+    price: items.reduce((s, i) => s + i.room.price * i.quantity, 0) / qty,
+    guests: items.reduce((s, i) => s + i.room.guests * i.quantity, 0) / qty,
+    bed: "Selected rooms",
+    size: items.reduce((s, i) => s + i.room.size * i.quantity, 0),
+  };
 }
-function selectionFree(d,a,z) {
-  return bookingItems(d).every(i=>getRooms().some(r=>r.id===i.roomId) && roomsFree(i.roomId,a,z)>=i.quantity);
+function selectionFree(d, a, z) {
+  return bookingItems(d).every(
+    (i) => getRooms().some((r) => r.id === i.roomId) && roomsFree(i.roomId, a, z) >= i.quantity,
+  );
+}
+
+// Snapshot room labels and rates so later catalog changes do not rewrite receipts.
+function roomChargeLines(b) {
+  const nights = Math.max(0, nightsBetween(b.checkin, b.checkout) || 0);
+  const items = bookingItems(b).map((i) => {
+    const room = getAllRooms().find((r) => r.id === i.roomId);
+    return {
+      ...i,
+      name: i.name || room?.name || b.roomName || i.roomId,
+      nightlyRate: i.nightlyRate ?? (!b.roomItems ? b.nightlyRate : undefined) ?? room?.price ?? 0,
+    };
+  });
+  const raw = items.reduce((sum, i) => sum + i.nightlyRate * i.quantity * nights, 0);
+  // Older records lack per-room snapshots. Allocate their saved gross charge proportionally.
+  const legacy =
+    b.total != null &&
+    !items.every((i) => bookingItems(b).find((x) => x.roomId === i.roomId)?.nightlyRate != null);
+  let allocated = 0;
+  return items.map((i, index) => {
+    let subtotal = legacy
+      ? Math.round(
+          (raw ? (i.nightlyRate * i.quantity * nights) / raw : 1 / items.length) * b.total * 100,
+        ) / 100
+      : i.nightlyRate * i.quantity * nights;
+    if (legacy && index === items.length - 1)
+      subtotal = Math.round((b.total - allocated) * 100) / 100;
+    allocated += subtotal;
+    return {
+      ...i,
+      nights,
+      nightlyRate: legacy && nights ? subtotal / nights / i.quantity : i.nightlyRate,
+      subtotal,
+    };
+  });
+}
+function roomBreakdown(b) {
+  return (
+    '<ul class="room-breakdown">' +
+    roomChargeLines(b)
+      .map(
+        (i) =>
+          "<li><strong>" +
+          esc(i.name) +
+          "</strong><small>" +
+          peso(i.nightlyRate) +
+          " / night x " +
+          plural(i.nights, "night") +
+          (i.quantity > 1 ? " x " + plural(i.quantity, "room") : "") +
+          "</small><b>" +
+          peso(i.subtotal) +
+          "</b></li>",
+      )
+      .join("") +
+    "</ul>"
+  );
+}
+function receiptLink(b) {
+  return b.status === "Confirmed"
+    ? '<a class="btn-outline" href="receipt.html?id=' +
+        encodeURIComponent(b.id) +
+        '">View receipt</a>'
+    : "";
 }

@@ -85,25 +85,30 @@ function initBooking(user, d, room) {
   el("checkout").min = el("checkin").value || today;
 
   el("back").href = "index.html#rooms";
-  el("party-readonly").textContent = `${plural(d.adults, "adult")}, ${plural(d.children, "child", "children")} · ${plural(d.rooms, "room")}. Change your party or selection on the rooms page.`; // back to this room, not the whole list
+  el("party-readonly").textContent =
+    `${plural(d.adults, "adult")}, ${plural(d.children, "child", "children")} · ${plural(d.rooms, "room")}. Change your party or selection on the rooms page.`; // back to this room, not the whole list
 
   // Summary panel
   el("sum-img").src = room.photo;
   el("sum-img").alt = room.name;
-  el("sum-name").textContent = room.name;
-  el("sum-meta").textContent = d.roomItems ? bookingItems(d).map(i => { const r = getRooms().find(r => r.id === i.roomId); return r.name + ': ' + peso(r.price) + ' / night'; }).join(' · ') : `${room.bed} · ${room.size} m² · ${room.guests} guests per room`;
+  el("sum-name").textContent = d.roomItems ? plural(d.rooms, "selected room") : room.name;
+  el("sum-meta").textContent = d.roomItems
+    ? "Your rooms and nightly rates are listed below."
+    : `${room.bed} · ${room.size} m² · ${room.guests} guests per room`;
   function drawSummary() {
     const a = el("checkin").value,
       b = el("checkout").value,
       n = a && b ? nightsBetween(a, b) : 0,
       qty = isWhole(el("rooms").value, 1) ? +el("rooms").value : 0;
+    el("room-breakdown").innerHTML = roomBreakdown({ ...d, checkin: a, checkout: b });
     el("sum-in").textContent = a ? fmtDate(a) : "—";
     el("sum-out").textContent = b ? fmtDate(b) : "—";
     el("sum-rooms").textContent = qty ? plural(qty, "room") : "—";
     if (n > 0 && qty) {
-      el("sum-calc").textContent =
-        `${peso(room.price)} × ${plural(n, "night")}` + (qty > 1 ? ` × ${plural(qty, "room")}` : "");
-      el("sum-sub").textContent = el("sum-total").textContent = peso(room.price * n * qty);
+      el("sum-calc").textContent = "Room subtotal";
+      el("sum-sub").textContent = el("sum-total").textContent = peso(
+        roomChargeLines({ ...d, checkin: a, checkout: b }).reduce((sum, i) => sum + i.subtotal, 0),
+      );
     } else {
       el("sum-calc").textContent = n > 0 ? "Choose how many rooms" : "Choose your dates";
       el("sum-sub").textContent = el("sum-total").textContent = "—";
@@ -126,10 +131,9 @@ function initBooking(user, d, room) {
   drawSummary();
 
   // Validation
-  const datesOk = () =>
-    el("checkin").value >= today &&
-    el("checkout").value > el("checkin").value;
-  const freeRooms = () => selectionFree(d, el("checkin").value, el("checkout").value) ? +d.rooms : 0;
+  const datesOk = () => el("checkin").value >= today && el("checkout").value > el("checkin").value;
+  const freeRooms = () =>
+    selectionFree(d, el("checkin").value, el("checkout").value) ? +d.rooms : 0;
   const rules = {
     first: () => (el("first").value.trim() ? "" : "Please enter your first name."),
     // A locked one-word account name has no last name, and the guest could not type one anyway.
@@ -155,7 +159,7 @@ function initBooking(user, d, room) {
         : el("checkout").value <= el("checkin").value
           ? "Check-out must be after check-in."
           : !freeRooms()
-            ? "This room type is fully booked on those dates. Please choose other dates."
+            ? "A selected room is unavailable on those dates. Choose other dates or change your room selection."
             : "",
     adults: () => (isWhole(el("adults").value, 1) ? "" : "Enter at least 1 adult."),
     children: () => (isWhole(el("children").value, 0) ? "" : "Enter 0 or more children."),
@@ -165,18 +169,19 @@ function initBooking(user, d, room) {
       if (!isWhole(qty, 1)) return "Enter at least 1 room.";
       const adults = +el("adults").value,
         guestsTotal = adults + +el("children").value;
-      if (isWhole(el("adults").value, 1) && +qty > adults) return "Each room needs at least one adult.";
+      if (isWhole(el("adults").value, 1) && +qty > adults)
+        return "Each room needs at least one adult.";
       if (datesOk()) {
         const free = freeRooms();
         if (free && +qty > free)
-          return `Only ${plural(free, "room")} of this type ${free === 1 ? "is" : "are"} free on those dates.`;
+          return `Only ${plural(free, "room")} selected ${free === 1 ? "is" : "are"} free on those dates.`;
       }
       if (
         isWhole(el("adults").value, 1) &&
         isWhole(el("children").value, 0) &&
         guestsTotal > room.guests * qty
       )
-        return `${plural(+qty, "room")} of this type ${+qty === 1 ? "fits" : "fit"} up to ${plural(room.guests * qty, "guest")}. Add rooms or choose fewer guests.`;
+        return `${plural(+qty, "room")} selected ${+qty === 1 ? "fits" : "fit"} up to ${plural(room.guests * qty, "guest")}. Add rooms or choose fewer guests.`;
       return "";
     },
   };

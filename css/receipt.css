@@ -1,0 +1,129 @@
+﻿.receipt-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 30px 0;
+}
+.paper-receipt {
+  max-width: 680px;
+  margin: 0 auto 60px;
+  background: white;
+  color: #222;
+  padding: 38px;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 30px #0001;
+  font-family: Arial, sans-serif;
+}
+.receipt-heading {
+  text-align: center;
+  border-bottom: 1px dashed #aaa;
+  padding-bottom: 20px;
+}
+.receipt-heading h1 {
+  font-family: Arial, sans-serif;
+  font-size: 30px;
+  letter-spacing: 5px;
+}
+.receipt-heading h2 {
+  font-size: 17px;
+  margin: 18px 0 8px;
+}
+.receipt-heading p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.receipt-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 0;
+  font-size: 14px;
+}
+.paper-receipt table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.paper-receipt th,
+.paper-receipt td {
+  padding: 12px 0;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+  vertical-align: top;
+}
+.paper-receipt th:last-child,
+.paper-receipt td:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+.paper-receipt small {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.6;
+}
+.receipt-totals {
+  padding: 16px 0;
+}
+.receipt-totals p {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0;
+  font-size: 14px;
+}
+.receipt-total {
+  border-top: 1px dashed #aaa;
+  padding-top: 12px;
+  font-size: 17px !important;
+}
+.receipt-foot {
+  text-align: center;
+  border-top: 1px dashed #aaa;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+.receipt-payment {
+  font-size: 13px;
+}
+.paper-receipt h3 {
+  font-size: 16px;
+}
+.receipt-controls [hidden] {
+  display: none;
+}
+@media (max-width: 550px) {
+  .paper-receipt {
+    padding: 20px;
+  }
+  .receipt-meta {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+@media print {
+  body {
+    background: white;
+  }
+  #site-header,
+  #site-footer,
+  .receipt-controls {
+    display: none !important;
+  }
+  #main {
+    padding: 0 !important;
+  }
+  .paper-receipt {
+    border: 0;
+    box-shadow: none;
+    max-width: none;
+    margin: 0;
+    padding: 10mm;
+  }
+  .paper-receipt tr {
+    break-inside: avoid;
+  }
+  @page {
+    margin: 12mm;
+  }
+}

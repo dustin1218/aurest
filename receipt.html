@@ -1,0 +1,27 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Booking receipt | AUREST</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/receipt.css" />
+  </head>
+  <body>
+    <header id="site-header"></header>
+    <main id="main">
+      <div class="receipt-controls">
+        <a class="btn-outline" href="my-bookings.html">Back to bookings</a
+        ><button class="btn" id="print-receipt" hidden>Print / Save PDF</button>
+      </div>
+      <article id="receipt" class="paper-receipt" aria-label="Booking receipt">
+        <p>Loading receipt...</p>
+      </article>
+    </main>
+    <footer id="site-footer"></footer>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/finance.js"></script>
+    <script src="js/receipt.js"></script>
+  </body>
+</html>

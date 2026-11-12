@@ -13,7 +13,7 @@ const commaList = (v) =>
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-const prev =(src, label, i, main) =>
+const prev = (src, label, i, main) =>
   `<div class="preview${main ? " main" : ""}"><img src="${src}" alt="${label}"><button type="button" data-rm="${i}" aria-label="Remove ${label}">✕</button></div>`;
 function drawPreviews() {
   f("thumb-prev").innerHTML = thumb ? prev(thumb, "thumbnail", 0, true) : "";
@@ -195,7 +195,9 @@ f("restore-rooms").addEventListener("click", async () => {
 // ----- Tables -----
 const guestName = (b) => b.guestName || (guests.find((g) => g.id === b.guestId) || {}).name || "—";
 const roomName = (b) =>
-  (b.roomItems ? b.roomName : (getAllRooms().find((r) => r.id === b.roomId) || {}).name || b.roomName || b.roomId) +
+  (b.roomItems
+    ? b.roomName
+    : (getAllRooms().find((r) => r.id === b.roomId) || {}).name || b.roomName || b.roomId) +
   (!b.roomItems && roomQty(b) > 1 ? " × " + roomQty(b) : "");
 
 function render() {
@@ -247,7 +249,7 @@ function render() {
       (
         b,
       ) => `<tr><td>${b.id}</td><td>${esc(guestName(b))}</td><td>${esc(roomName(b))}</td><td>${b.checkin}</td><td>${b.checkout}</td><td>${b.guests}</td>
-    <td><select data-bk="${b.id}" aria-label="Status for booking ${b.id}"${b.status === "Cancelled" ? " disabled" : ""}>${["Pending", "Confirmed", "Cancelled"].map((s) => `<option${s === b.status ? " selected" : ""}>${s}</option>`).join("")}</select></td><td>${b.status !== "Cancelled" ? `<button class="btn-outline" data-admin-reschedule="${b.id}">Reschedule</button>` : "—"}</td></tr>`,
+    <td><select data-bk="${b.id}" aria-label="Status for booking ${b.id}"${b.status === "Cancelled" ? " disabled" : ""}>${["Pending", "Confirmed", "Cancelled"].map((s) => `<option${s === b.status ? " selected" : ""}>${s}</option>`).join("")}</select></td><td>${receiptLink(b)}${b.status !== "Cancelled" ? `<button class="btn-outline" data-admin-reschedule="${b.id}">Reschedule</button>` : "—"}</td></tr>`,
     )
     .join("");
   f("guests-body").innerHTML = [

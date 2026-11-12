@@ -118,7 +118,13 @@ document.addEventListener("click", (e) => {
 // Call after the page has filled in its defaults, and call clear() once the form succeeds.
 const FORM_DRAFT_PREFIX = "aurest-form:";
 function keepFormOnRefresh(form, scope = "") {
-  const key = [FORM_DRAFT_PREFIX, (getUser() || {}).email || "", location.pathname, form.id, scope].join("|");
+  const key = [
+    FORM_DRAFT_PREFIX,
+    (getUser() || {}).email || "",
+    location.pathname,
+    form.id,
+    scope,
+  ].join("|");
   const fields = () =>
     [...form.elements].filter(
       (el) => (el.id || el.name) && !/^(password|file|submit|button|reset)$/.test(el.type),
@@ -252,7 +258,12 @@ function confirmDialog({
 
 // ----- Rooms, bookings, roles (saved in the browser until the backend takes over) -----
 const hiddenRoomIds = () => store.get("aurest-hidden-rooms", []); // default rooms the admin has deleted
-const getAllRooms = () => [...rooms, ...store.get("aurest-rooms", [])]; // everything, including deleted defaults
+const getAllRooms = () => [
+  ...rooms,
+  ...store
+    .get("aurest-rooms", [])
+    .map((r) => ({ ...r, units: 1, name: r.roomNumber ? r.name : r.name + " (" + r.id + ")" })),
+]; // everything, including deleted defaults
 const getRooms = () => getAllRooms().filter((r) => !hiddenRoomIds().includes(r.id));
 const isAdmin = () => (getUser() || {}).role === "admin";
 const allBookings = () => {

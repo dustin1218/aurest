@@ -1,0 +1,131 @@
+{
+  "method": "Built-in image_gen",
+  "images": [
+    {
+      "id": "R001",
+      "name": "Classic Room",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Classic Room. one queen bed, modest 28 square metre cozy room. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-750bcabd-ecd6-457d-ad54-1aab9b57edc6.png",
+      "file": "images/rooms/r001.jpg"
+    },
+    {
+      "id": "R002",
+      "name": "Deluxe Room",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Deluxe Room. one king bed, elegant 36 square metre room with desk. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-9ac6007f-5bfa-4132-8bbc-738dc664a5af.png",
+      "file": "images/rooms/r002.jpg"
+    },
+    {
+      "id": "R003",
+      "name": "Premier Suite",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Premier Suite. two queen beds, spacious 52 square metre suite with sitting area. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-b20ccf61-2342-491e-aebd-bd2ea05def31.png",
+      "file": "images/rooms/r003.jpg"
+    },
+    {
+      "id": "R004",
+      "name": "Cozy Single",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Cozy Single. one single bed, compact 18 square metre budget room. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-d4e37122-7e26-4a56-bd0a-72afaa13df8b.png",
+      "file": "images/rooms/r004.jpg"
+    },
+    {
+      "id": "R005",
+      "name": "Standard Twin",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Standard Twin. two separate single beds, simple 26 square metre room. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-795b3210-6333-4836-bd0d-f2b90a591026.png",
+      "file": "images/rooms/r005.jpg"
+    },
+    {
+      "id": "R006",
+      "name": "Superior Room",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Superior Room. one queen bed, bright 30 square metre room with mini fridge. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-b8b88447-cbd0-46c3-b3fb-66cc6681cc17.png",
+      "file": "images/rooms/r006.jpg"
+    },
+    {
+      "id": "R007",
+      "name": "Garden View Room",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Garden View Room. one queen bed and one single bed, garden view window seat. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-230b4ffc-affb-4bbc-802a-6940259f1142.png",
+      "file": "images/rooms/r007.jpg"
+    },
+    {
+      "id": "R008",
+      "name": "Family Room",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Family Room. two queen beds, welcoming 44 square metre room. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-7a5128b2-e994-4b0a-b2e5-fb5b51468441.png",
+      "file": "images/rooms/r008.jpg"
+    },
+    {
+      "id": "R009",
+      "name": "Executive Suite",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Executive Suite. one king bed, separate business lounge and desk. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-9ac4db5f-11ec-4557-b260-c97cbeea47a8.png",
+      "file": "images/rooms/r009.jpg"
+    },
+    {
+      "id": "R010",
+      "name": "Family Suite",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Family Suite. one king bed and two single beds, generous family suite. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-4f00d9e8-f1e2-4c3c-9cfa-e8e730181b27.png",
+      "file": "images/rooms/r010.jpg"
+    },
+    {
+      "id": "R011",
+      "name": "Junior Suite",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Junior Suite. one king bed, generous separate lounge. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-184675da-74a8-424b-889a-2c16d7a7b43c.png",
+      "file": "images/rooms/r011.jpg"
+    },
+    {
+      "id": "R012",
+      "name": "Honeymoon Suite",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Honeymoon Suite. one king bed, romantic private terrace and soaking tub. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-06d3e505-35f5-44f9-913b-e428b0f85db7.png",
+      "file": "images/rooms/r012.jpg"
+    },
+    {
+      "id": "R013",
+      "name": "Panorama Suite",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Panorama Suite. one king bed and sofa bed, panoramic city balcony. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-0d7b6e80-5aa3-4ea3-bfd2-791944f5a174.png",
+      "file": "images/rooms/r013.jpg"
+    },
+    {
+      "id": "R014",
+      "name": "Two-bedroom Residence",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Two-bedroom Residence. two bedrooms, two king beds and two single beds, dining area. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-217d7005-e5ed-46c2-96c1-5ff108b3ad4b.png",
+      "file": "images/rooms/r014.jpg"
+    },
+    {
+      "id": "R015",
+      "name": "Pool Villa",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Pool Villa. two king bedrooms and private tropical plunge pool. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-10c231b7-0063-423f-8d86-6da8322bc493.png",
+      "file": "images/rooms/r015.jpg"
+    },
+    {
+      "id": "R016",
+      "name": "Penthouse Suite",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Penthouse Suite. two king bedrooms, top-floor terrace, private dining, very luxurious. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-cb1795a6-9f75-4275-889a-9423d47ef17a.png",
+      "file": "images/rooms/r016.jpg"
+    },
+    {
+      "id": "R017",
+      "name": "Presidential Suite",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Presidential Suite. three king bedrooms, expansive luxury lounge. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-0bfdb4e2-da8c-481c-8dae-52978089de66.png",
+      "file": "images/rooms/r017.jpg"
+    },
+    {
+      "id": "R018",
+      "name": "Royal Residence",
+      "prompt": "Use case: photorealistic-natural. Create ONE landscape hotel interior photograph for AUREST Royal Residence. four king bedrooms, palatial modern residence and private dining. A coherent Philippine boutique hotel aesthetic: warm oak, cream linen, muted green accents; increasing luxury appropriate to this room category. Natural daylight, realistic architecture and furniture, eye-level wide interior composition. For multi-bedroom suites show main bedroom with glimpse of lounge, not all beds crammed together. No people, no text, no logos, no collage. Project website room photo; save output image.",
+      "source": "C:\\Users\\dusti\\.codex\\generated_images\\01a1d110-251e-7401-97f7-af91cbe50eca\\exec-40a87dd8-61c2-4242-bd65-88e5d7deda4a.png",
+      "file": "images/rooms/r018.jpg"
+    }
+  ]
+}

@@ -2380,3 +2380,16 @@ td select {
 @media(max-width:600px) { .selection-bar { position:static; } .selection-bar button { width:100%; } }
 
 .selection-bar[hidden], #add-selection[hidden] { display: none; }
+
+#reserve[hidden] { display:none; }
+.card.selection-disabled { cursor:default; background:#f2f0eb; }
+.card.selection-disabled .room-select { opacity:.55; cursor:not-allowed; }
+.filters { display:flex; flex-wrap:wrap; align-items:end; gap:14px; }
+.filters .field { flex:1 1 155px; }
+#filter-error { flex-basis:100%; color:#9b342b; }
+.room-breakdown { margin:16px 0; padding:0; list-style:none; text-align:left; }
+.room-breakdown li { padding:12px 0; border-bottom:1px solid #ddd6ca; }
+.room-breakdown strong, .room-breakdown small { display:block; }
+.room-breakdown small { color:#625d55; margin-top:4px; }
+
+.selection-info { flex:1 1 260px; } #selection-details summary { cursor:pointer; margin-top:8px; } #selection-details .room-breakdown { max-height:240px; overflow:auto; }
