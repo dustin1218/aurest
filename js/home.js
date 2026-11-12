@@ -1,4 +1,4 @@
-// ----- Guests and rooms picker -----
+﻿// ----- Guests and rooms picker -----
 const s0 = getSearch();
 const party = {
   adults: Math.max(1, +s0.adults || 1),
@@ -20,8 +20,8 @@ function updateGuests() {
     s.querySelector('[data-step="-1"]').disabled = party[s.dataset.key] <= +s.dataset.min;
   });
   $("#picker-summary").textContent =
-    `${plural(party.adults, "adult")} · ${plural(party.children, "child", "children")} · ${plural(party.rooms, "room")}` +
-    (party.pets ? " · Pets" : "");
+    `${plural(party.adults, "adult")} Â· ${plural(party.children, "child", "children")} Â· ${plural(party.rooms, "room")}` +
+    (party.pets ? " Â· Pets" : "");
   if (roomSelectionReady) drawRooms();
 }
 const setPanel = (open) => {
@@ -154,7 +154,7 @@ function drawRooms() {
     : "";
   $("#filters").hidden = !expanded;
   $("#chip-box").innerHTML = applied
-    ? `<span class="chip">${fmtDate(applied.checkin)} – ${fmtDate(applied.checkout)} · ${plural(applied.adults + applied.children, "guest")} · ${plural(applied.rooms, "room")}<button type="button" id="clear" aria-label="Clear search">✕</button></span>`
+    ? `<span class="chip">${fmtDate(applied.checkin)} â€“ ${fmtDate(applied.checkout)} Â· ${plural(applied.adults + applied.children, "guest")} Â· ${plural(applied.rooms, "room")}<button type="button" id="clear" aria-label="Clear search">âœ•</button></span>`
     : "";
   more.hidden = !expanded && list.length <= FEATURED;
   more.textContent = expanded
@@ -314,9 +314,9 @@ function drawSelection() {
   const list=getRooms().filter(r=>selected.has(r.id));
   const s=applied || getSearch();
   const total=list.reduce((sum,r)=>sum+r.price,0)*nightsBetween(s.checkin,s.checkout);
-  $('#selection-summary').textContent=list.length ? list.map(r=>r.name).join(', ')+' · '+plural(list.length,'room')+' · '+peso(total)+' total for '+plural(nightsBetween(s.checkin,s.checkout),'night') : 'No rooms selected';
+  $("#selection-summary").textContent = `${list.length} of ${party.rooms} rooms selected` + (list.length ? ` - ${list.map(r => r.name).join(", ")} - ${peso(total)} total for ${plural(nightsBetween(s.checkin, s.checkout), "night")}` : "");
   $('#book-selected').textContent = list.length ? 'Book ' + plural(list.length, 'selected room') : 'Book selected rooms';
-  $('#book-selected').disabled=!list.length;
+  $('#book-selected').disabled = list.length !== party.rooms;
   $('#clear-selection').disabled=!list.length;
 }
 gallery.addEventListener('click',e=>{
@@ -327,6 +327,11 @@ gallery.addEventListener('click',e=>{
 gallery.addEventListener('change',e=>{
   const id=e.target.dataset.select;
   if(!id) return;
+  if (e.target.checked && selected.size >= party.rooms) {
+    e.target.checked = false;
+    toast(`You selected ${party.rooms} rooms. Change the room count in Guests and rooms to select more.`);
+    return;
+  }
   if(e.target.checked) selected.add(id); else selected.delete(id);
   e.target.closest('.card').classList.toggle('selected',e.target.checked);
   drawSelection();
@@ -336,11 +341,11 @@ $('#book-selected').addEventListener('click',()=>{
   if (party.rooms <= 1) return;
   const s={checkin:cin.value, checkout:cout.value, ...party};
   const list=getRooms().filter(r=>selected.has(r.id));
-  if(!list.length) return;
+  if (list.length !== party.rooms) { toast(`Select exactly ${plural(party.rooms, 'room')} to continue.`); return; }
   if(!s.checkin || !s.checkout || s.checkin<addDays(0) || s.checkout<=s.checkin) {toast('Please search for valid future dates first.');return;}
   if(list.length>s.adults) {toast('Each selected room needs at least one adult. Update your guests in Search.');return;}
   if(list.reduce((sum,r)=>sum+r.guests,0)<s.adults+s.children) {toast('Select more rooms or larger rooms to fit your group.');return;}
-  const d={...s,roomId:list[0].id,rooms:list.length,roomItems:list.map(r=>({roomId:r.id,quantity:1}))};
+  const d={...s,roomId:list[0].id,rooms:party.rooms,roomItems:list.map(r=>({roomId:r.id,quantity:1}))};
   if(!selectionFree(d,s.checkin,s.checkout)) {toast('A selected room is unavailable for these dates. Change your selection or search again.');return;}
   store.set('aurest-search',s);
   store.set('aurest-draft',d);

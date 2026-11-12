@@ -12,7 +12,7 @@ if (!room) {
     free = left >= qty;
   const bookLabel = free
     ? qty > 1
-      ? `Reserve ${qty} rooms`
+      ? "Choose rooms separately"
       : "Reserve this room"
     : left
       ? `Only ${left} left on these dates`
@@ -39,9 +39,9 @@ if (!room) {
         <p class="lead">${esc(room.desc)}</p>
         <span class="price">${peso(room.price)} <small>/ night</small></span>
         <div class="stay-line">Your stay: <b>${fmtDate(s.checkin)} – ${fmtDate(s.checkout)}</b> (${plural(n, "night")}${qty > 1 ? ", " + plural(qty, "room") : ""}) · Total <b>${peso(room.price * n * qty)}</b><br>${plural(left, "room")} of this type free for these dates · <a href="index.html#home">Change dates or rooms</a></div>
-        <button class="btn-outline block" id="add-selection" type="button"${qty > 1 ? "" : " hidden"}${left ? "" : " disabled"}>Add to room selection</button>
+        <button class="btn-outline block" id="add-selection" type="button"${qty > 1 ? "" : " hidden"}${left ? "" : " disabled"}>Select this room type</button>
         <p${qty > 1 ? "" : " hidden"}>Select this room, then return to the room list to add other rooms and book them together.</p>
-        <button class="btn block" id="reserve" type="button"${free ? "" : " disabled"}>${bookLabel}</button>
+        <button class="btn block" id="reserve" type="button"${qty > 1 ? " hidden" : ""}${free ? "" : " disabled"}>${bookLabel}</button>
       </aside>
     </div>
     <ul class="amenities" aria-label="Room features">${beds.map((b) => `<li>${esc(b)}</li>`).join("")}<li>${room.size} m²</li>${room.amenities.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>`;
@@ -55,6 +55,11 @@ if (!room) {
   $("#add-selection").addEventListener("click", () => {
     if (qty <= 1) return;
     const selection = new Set(store.get("aurest-room-selection", []));
+    const maxRooms = Math.max(1, +getSearch().rooms || 1);
+    if (!selection.has(room.id) && selection.size >= maxRooms) {
+      toast(`You selected ${maxRooms} rooms already. Change the room count in Guests and rooms to add more.`);
+      return;
+    }
     selection.add(room.id);
     store.set("aurest-room-selection", [...selection]);
     location.href = "index.html#rooms";
