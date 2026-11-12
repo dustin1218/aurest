@@ -111,13 +111,15 @@ form.addEventListener("submit", (e) => {
     applied = found;
     expanded = true;
     // Each room must hold its share of the group, so filter on guests per room.
-    cap.value = Math.min(4, Math.ceil((party.adults + party.children) / party.rooms));
+    cap.value = 1;
+    selected.clear();
     drawRooms();
     $("#rooms").scrollIntoView({ behavior: "smooth" });
   }
 });
 
 // ===== Rooms section: 3 featured, "See more" shows everything =====
+const selected = new Set(store.get("aurest-room-selection", []));
 const FEATURED = 3;
 const gallery = $("#room-gallery"),
   cap = $("#capacity"),
@@ -135,14 +137,14 @@ function drawRooms() {
     if (!applied) return true;
     free[r.id] = roomsFree(r.id, applied.checkin, applied.checkout);
     return (
-      free[r.id] >= applied.rooms && r.guests * applied.rooms >= applied.adults + applied.children
+      free[r.id] >= 1
     );
   });
   if (sort.value === "low") list.sort((a, b) => a.price - b.price);
   if (sort.value === "high") list.sort((a, b) => b.price - a.price);
   const shown = expanded ? list : list.slice(0, FEATURED);
   gallery.innerHTML = shown.length
-    ? shown.map((r) => roomCard(r, applied ? `${free[r.id]} left` : "")).join("")
+    ? shown.map((r) => selectableCard(r, applied ? `${free[r.id]} left` : "")).join("")
     : `<div class="empty"><h3>${applied ? "No rooms are free for that stay" : `No rooms fit ${cap.value} guests`}</h3><p>${applied ? "Try different dates, fewer guests or more rooms." : "Try fewer guests or clear your filters."}</p><button class="btn" type="button" id="reset">Show all rooms</button></div>`;
   $("#count").textContent = shown.length
     ? `Showing ${shown.length} of ${plural(list.length, "room")}`
@@ -156,6 +158,7 @@ function drawRooms() {
     ? "Show fewer rooms"
     : `See more rooms (${list.length - FEATURED} more)`;
   more.setAttribute("aria-expanded", expanded);
+  drawSelection();
   const rb = $("#reset");
   if (rb)
     rb.addEventListener("click", () => {
@@ -293,3 +296,44 @@ $("#contact-form").addEventListener("submit", (e) => {
   drawPause();
   start();
 })();
+
+function selectableCard(r,note) {
+  const checked=selected.has(r.id);
+  return roomCard(r,note).replace('<article class="card">', '<article class="card selectable'+(checked?' selected':'')+'" data-room="'+r.id+'"><label class="room-select"><input type="checkbox" data-select="'+r.id+'" '+(checked?'checked':'')+'><span>Select '+esc(r.name)+'</span></label>');
+}
+function drawSelection() {
+  for (const id of selected) if (!getRooms().some(r=>r.id===id)) selected.delete(id);
+  store.set('aurest-room-selection',[...selected]);
+  const list=getRooms().filter(r=>selected.has(r.id));
+  const s=applied || getSearch();
+  const total=list.reduce((sum,r)=>sum+r.price,0)*nightsBetween(s.checkin,s.checkout);
+  $('#selection-summary').textContent=list.length ? list.map(r=>r.name).join(', ')+' · '+plural(list.length,'room')+' · '+peso(total)+' total for '+plural(nightsBetween(s.checkin,s.checkout),'night') : 'No rooms selected';
+  $('#book-selected').disabled=!list.length;
+  $('#clear-selection').disabled=!list.length;
+}
+gallery.addEventListener('click',e=>{
+  if(e.target.closest('a, label, input')) return;
+  const card=e.target.closest('[data-room]');
+  if(card) { const input=card.querySelector('input'); input.click(); }
+});
+gallery.addEventListener('change',e=>{
+  const id=e.target.dataset.select;
+  if(!id) return;
+  if(e.target.checked) selected.add(id); else selected.delete(id);
+  e.target.closest('.card').classList.toggle('selected',e.target.checked);
+  drawSelection();
+});
+$('#clear-selection').addEventListener('click',()=>{selected.clear();drawRooms();});
+$('#book-selected').addEventListener('click',()=>{
+  const s=applied || getSearch();
+  const list=getRooms().filter(r=>selected.has(r.id));
+  if(!list.length) return;
+  if(cin.value!==s.checkin || cout.value!==s.checkout || party.adults!==s.adults || party.children!==s.children) { toast('Apply your updated dates and guests with Search first, then select your rooms.'); return; }
+  if(s.checkin<addDays(0) || s.checkout<=s.checkin) {toast('Please search for valid future dates first.');return;}
+  if(list.length>s.adults) {toast('Each selected room needs at least one adult. Update your guests in Search.');return;}
+  if(list.reduce((sum,r)=>sum+r.guests,0)<s.adults+s.children) {toast('Select more rooms or larger rooms to fit your group.');return;}
+  const d={...s,roomId:list[0].id,rooms:list.length,roomItems:list.map(r=>({roomId:r.id,quantity:1}))};
+  if(!selectionFree(d,s.checkin,s.checkout)) {toast('A selected room is unavailable for these dates. Change your selection or search again.');return;}
+  store.set('aurest-draft',d);
+  location.href=getUser()?'booking.html':'login.html?next=booking.html';
+});

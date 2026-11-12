@@ -2,8 +2,8 @@
 const user = getUser();
 if (!user) location.replace("login.html?next=booking.html");
 const d = store.get("aurest-draft");
-const room = d && d.first && getRooms().find((r) => r.id === d.roomId);
-if (!room) location.replace("index.html#rooms"); // sends people back to start if nothing to review
+const room = d && d.first && selectionRoom(d);
+if (!room || !user) { location.replace("index.html#rooms"); } else { // sends people back to start if nothing to review
 
 const qty = Math.max(1, +d.rooms || 1),
   n = nightsBetween(d.checkin, d.checkout),
@@ -24,12 +24,16 @@ $("#review-list").innerHTML = [
 $("#sum-img").src = room.photo;
 $("#sum-img").alt = room.name;
 $("#sum-name").textContent = room.name;
-$("#sum-meta").textContent = `${room.bed} · ${room.size} m² · ${room.guests} guests per room`;
+$("#sum-meta").textContent = d.roomItems ? bookingItems(d).map(i => { const r = getRooms().find(r => r.id === i.roomId); return r.name + ': ' + peso(r.price) + ' / night'; }).join(' · ') : `${room.bed} · ${room.size} m² · ${room.guests} guests per room`;
 $("#sum-calc").textContent =
   `${peso(room.price)} × ${plural(n, "night")}` + (qty > 1 ? ` × ${plural(qty, "room")}` : "");
 $("#sum-sub").textContent = $("#sum-total").textContent = peso(total);
 
+let confirming = false;
 $("#confirm").addEventListener("click", async () => {
+  if (confirming) return;
+  confirming = true;
+  try {
   const ok = await confirmDialog({
     title: "Confirm your reservation?",
     message: `${qty > 1 ? qty + " × " : ""}${room.name}, ${fmtDate(d.checkin)} to ${fmtDate(d.checkout)} (${plural(n, "night")}), total ${peso(total)}. It stays Pending until the hotel confirms it.`,
@@ -38,7 +42,7 @@ $("#confirm").addEventListener("click", async () => {
   });
   if (!ok) return;
   // Recheck free rooms and capacity immediately before saving, since bookings may have changed during review.
-  const free = roomsFree(room.id, d.checkin, d.checkout);
+  const free = selectionFree(d, d.checkin, d.checkout) ? qty : 0;
   if (free < qty) {
     toast(
       free
@@ -60,6 +64,7 @@ $("#confirm").addEventListener("click", async () => {
     email: d.email,
     phone: d.phone,
     roomId: room.id,
+    roomItems: d.roomItems,
     roomName: room.name,
     checkin: d.checkin,
     checkout: d.checkout,
@@ -76,9 +81,11 @@ $("#confirm").addEventListener("click", async () => {
     status: "Pending",
     created: addDays(0),
   });
-  store.set("aurest-bookings", list);
+  try { persist("aurest-bookings", list); } catch { toast("Could not save your reservation. Please try again."); return; }
   store.del("aurest-draft");
+  store.del("aurest-room-selection");
   location.href = "confirmation.html?id=" + id;
+  } finally { confirming = false; }
 });
 // Preview the selected amount due; choosing a payment plan does not charge the guest.
 function paymentPreview() {
@@ -98,3 +105,5 @@ $$('[name="payment-plan"]').forEach((e) =>
   }),
 );
 paymentPreview();
+
+}

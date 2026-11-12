@@ -68,8 +68,6 @@ const rules = {
   "r-price": (v) => (+v > 0 ? "" : "Enter a price greater than 0."),
   "r-guests": (v) =>
     Number.isInteger(+v) && +v >= 1 && +v <= 10 ? "" : "Enter a whole number from 1 to 10.",
-  "r-units": (v) =>
-    v !== "" && Number.isInteger(+v) && +v >= 1 ? "" : "Enter how many of these rooms you have.",
   "r-bed": (v) => (commaList(v).length ? "" : "Please enter at least one bed type."),
   "r-size": (v) => (+v > 0 ? "" : "Enter the room size in m²."),
   "r-desc": (v) => (v.trim().length >= 10 ? "" : "Write at least 10 characters."),
@@ -148,7 +146,7 @@ f("room-form").addEventListener("submit", async (e) => {
     name: f("r-name").value.trim(),
     price: +f("r-price").value,
     guests: +f("r-guests").value,
-    units: +f("r-units").value,
+    units: 1,
     bed: commaList(f("r-bed").value).join(", "), // room-details.js shows each bed type as its own tag
     size: +f("r-size").value,
     desc: f("r-desc").value.trim(),
@@ -197,8 +195,8 @@ f("restore-rooms").addEventListener("click", async () => {
 // ----- Tables -----
 const guestName = (b) => b.guestName || (guests.find((g) => g.id === b.guestId) || {}).name || "—";
 const roomName = (b) =>
-  ((getAllRooms().find((r) => r.id === b.roomId) || {}).name || b.roomName || b.roomId) +
-  (roomQty(b) > 1 ? " × " + roomQty(b) : "");
+  (b.roomItems ? b.roomName : (getAllRooms().find((r) => r.id === b.roomId) || {}).name || b.roomName || b.roomId) +
+  (!b.roomItems && roomQty(b) > 1 ? " × " + roomQty(b) : "");
 
 function render() {
   const bk = allBookings(),

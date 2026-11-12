@@ -2,7 +2,7 @@
 // Reads the draft saved by room-details.js, validates the form, then saves the full draft for review.js.
 const me = getUser();
 const draft = store.get("aurest-draft");
-const bookRoom = draft && getRooms().find((r) => r.id === draft.roomId);
+const bookRoom = selectionRoom(draft);
 
 // ----- Philippine mobile numbers: 11 digits starting with 09, shown as 0912 345 6789 -----
 const PHONE_DIGITS = 11;
@@ -64,6 +64,9 @@ function initBooking(user, d, room) {
     el("booking-form"),
     [room.id, d.checkin, d.checkout, d.adults, d.children, d.rooms].join(),
   );
+  el("adults").value = d.adults;
+  el("children").value = d.children;
+  el("rooms").value = d.rooms;
   limitPhoneInput(el("phone")); // a restored draft gets the same digits-only format
   // The email and booking name always come from the account. Set after the draft restore so nothing can replace them.
   el("email").value = user.email;
@@ -81,13 +84,14 @@ function initBooking(user, d, room) {
   el("checkin").min = today;
   el("checkout").min = el("checkin").value || today;
 
-  el("back").href = "room-details.html?id=" + encodeURIComponent(room.id); // back to this room, not the whole list
+  el("back").href = "index.html#rooms";
+  el("party-readonly").textContent = `${plural(d.adults, "adult")}, ${plural(d.children, "child", "children")} · ${plural(d.rooms, "room")}. Change your party or selection on the rooms page.`; // back to this room, not the whole list
 
   // Summary panel
   el("sum-img").src = room.photo;
   el("sum-img").alt = room.name;
   el("sum-name").textContent = room.name;
-  el("sum-meta").textContent = `${room.bed} · ${room.size} m² · ${room.guests} guests per room`;
+  el("sum-meta").textContent = d.roomItems ? bookingItems(d).map(i => { const r = getRooms().find(r => r.id === i.roomId); return r.name + ': ' + peso(r.price) + ' / night'; }).join(' · ') : `${room.bed} · ${room.size} m² · ${room.guests} guests per room`;
   function drawSummary() {
     const a = el("checkin").value,
       b = el("checkout").value,
@@ -125,7 +129,7 @@ function initBooking(user, d, room) {
   const datesOk = () =>
     el("checkin").value >= today &&
     el("checkout").value > el("checkin").value;
-  const freeRooms = () => roomsFree(room.id, el("checkin").value, el("checkout").value);
+  const freeRooms = () => selectionFree(d, el("checkin").value, el("checkout").value) ? +d.rooms : 0;
   const rules = {
     first: () => (el("first").value.trim() ? "" : "Please enter your first name."),
     // A locked one-word account name has no last name, and the guest could not type one anyway.
@@ -207,13 +211,14 @@ function initBooking(user, d, room) {
     el("form-error").textContent = "";
     const ok = Object.keys(rules).map(run).every(Boolean);
     if (!ok) {
-      el("form-error").textContent = "Please fix the highlighted fields.";
+      el("form-error").textContent = rules.rooms() || "Please fix the highlighted fields.";
       const bad = $(".invalid", el("booking-form"));
       if (bad) bad.focus();
       return;
     }
     store.set("aurest-draft", {
       roomId: room.id,
+      roomItems: d.roomItems,
       first: el("first").value.trim(),
       last: el("last").value.trim(),
       email: user.email,

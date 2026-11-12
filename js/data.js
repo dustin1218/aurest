@@ -147,6 +147,18 @@ const rooms = [
   },
 ];
 
+// Additional hardcoded premium stays; replace reused demo photography with room-specific photos.
+rooms.push(...[
+  ['R011','Junior Suite',8200,2,65,'1 king bed','A generous lounge and a quiet bedroom for longer escapes.'],
+  ['R012','Honeymoon Suite',9800,2,72,'1 king bed','A romantic retreat with a private terrace and soaking tub.'],
+  ['R013','Panorama Suite',11500,3,85,'1 king bed, 1 sofa bed','Wide views, a private balcony and room to unwind.'],
+  ['R014','Two-bedroom Residence',14500,6,110,'2 king beds, 2 single beds','Two bedrooms and a dining area for families travelling together.'],
+  ['R015','Pool Villa',18000,4,130,'2 king beds','A secluded villa with a private plunge pool and outdoor lounge.'],
+  ['R016','Penthouse Suite',24000,4,165,'2 king beds','Top-floor comfort with a spacious terrace and private dining area.'],
+  ['R017','Presidential Suite',35000,6,220,'3 king beds','Three bedrooms, an expansive lounge and space for special occasions.'],
+  ['R018','Royal Residence',48000,8,300,'4 king beds','A four-bedroom residence for an exceptional group getaway.']
+].map(([id,name,price,guests,size,bed,desc])=>({id,name,price,guests,size,bed,desc,units:2,photo:'images/room-premier.jpg',gallery:['images/room-premier.jpg','images/room-deluxe.jpg'],amenities:['Wi-Fi','Air conditioning','Private bathroom','Sitting area']})));
+
 // Demo accounts for testing. New guest accounts are saved in the browser by register.html.
 const users = [
   {

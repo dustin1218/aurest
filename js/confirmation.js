@@ -21,8 +21,8 @@ function showConfirmation(b) {
   $("#c-status").innerHTML = statusChip(b.status);
   $("#c-img").src = r ? r.photo : "images/room-classic.jpg";
   $("#c-img").alt = b.roomName;
-  $("#c-room").textContent = qty > 1 ? `${b.roomName} × ${qty}` : b.roomName;
-  $("#c-meta").textContent = r ? `${r.bed} · ${r.size} m² · ${r.guests} guests per room` : "";
+  $("#c-room").textContent = !b.roomItems && qty > 1 ? `${b.roomName} × ${qty}` : b.roomName;
+  $("#c-meta").textContent = b.roomItems ? plural(qty, "selected room") : r ? `${r.bed} · ${r.size} m² · ${r.guests} guests per room` : "";
   $("#c-in").textContent = fmtDate(b.checkin);
   $("#c-out").textContent = fmtDate(b.checkout);
   $("#c-guests").textContent = b.children

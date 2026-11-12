@@ -86,7 +86,7 @@ function roomsFree(roomId, a, z, exclude) {
   const stays = allBookings().filter(
     (b) =>
       b.id !== exclude &&
-      b.roomId === roomId &&
+      bookingItems(b).some(i => i.roomId === roomId) &&
       b.status !== "Cancelled" &&
       a < b.checkout &&
       z > b.checkin,
@@ -95,7 +95,7 @@ function roomsFree(roomId, a, z, exclude) {
   for (let night = a; night < z; night = nextDayIso(night)) {
     const held = stays
       .filter((b) => b.checkin <= night && night < b.checkout)
-      .reduce((n, b) => n + roomQty(b), 0);
+      .reduce((n, b) => n + bookingItems(b).filter(i => i.roomId === roomId).reduce((sum,i) => sum + i.quantity, 0), 0);
     busiest = Math.max(busiest, held);
   }
   return Math.max(0, roomUnits(room) - busiest);
@@ -173,7 +173,7 @@ function rescheduleReservation(b, onSaved) {
       if (a < addDays(0) || z <= a)
         throw Error("Choose future dates with check-out after check-in.");
       const qty = roomQty(b);
-      if (!available(b.roomId, a, z, id, qty))
+      if (!bookingItems(b).every(i => available(i.roomId, a, z, id, i.quantity)))
         throw Error(
           qty > 1
             ? `There aren't ${qty} of these rooms free on those dates.`
@@ -226,4 +226,23 @@ function rescheduleReservation(b, onSaved) {
     end.min = nextDay(start.value);
     if (end.value < end.min) end.value = end.min;
   });
+}
+
+// Legacy single-type reservations and mixed selections share the same inventory checks.
+function bookingItems(b) {
+  return b.roomItems || [{roomId:b.roomId, quantity:roomQty(b)}];
+}
+function selectionRoom(d) {
+  if (!d) return null;
+  if (!d.roomItems) return getRooms().find(r=>r.id===d.roomId);
+  const items=d.roomItems.map(i=>({...i,room:getRooms().find(r=>r.id===i.roomId)}));
+  if (!items.length || items.some(i=>!i.room || !Number.isInteger(i.quantity) || i.quantity<1)) return null;
+  const qty=items.reduce((s,i)=>s+i.quantity,0);
+  return {...items[0].room, name:items.map(i=>i.room.name+' × '+i.quantity).join(', '),
+    price:items.reduce((s,i)=>s+i.room.price*i.quantity,0)/qty,
+    guests:items.reduce((s,i)=>s+i.room.guests*i.quantity,0)/qty,
+    bed:'Selected rooms', size:items.reduce((s,i)=>s+i.room.size*i.quantity,0)};
+}
+function selectionFree(d,a,z) {
+  return bookingItems(d).every(i=>getRooms().some(r=>r.id===i.roomId) && roomsFree(i.roomId,a,z)>=i.quantity);
 }

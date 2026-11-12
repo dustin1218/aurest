@@ -73,31 +73,9 @@
               ></small>
             </div>
           </div>
-          <!-- No fixed maximums: the counts are checked against free rooms and room capacity. -->
-          <div class="three">
-            <div class="field">
-              <label for="adults">Adults</label
-              ><input id="adults" type="number" min="1" step="1" inputmode="numeric" /><small
-                class="error"
-                id="adults-error"
-              ></small>
-            </div>
-            <div class="field">
-              <label for="children">Children</label
-              ><input id="children" type="number" min="0" step="1" inputmode="numeric" /><small
-                class="error"
-                id="children-error"
-              ></small>
-            </div>
-            <div class="field">
-              <label for="rooms">Rooms</label
-              ><input id="rooms" type="number" min="1" step="1" inputmode="numeric" /><small
-                class="error"
-                id="rooms-error"
-              ></small>
-            </div>
-          </div>
-          <section class="policy-box">
+          <p id="party-readonly" class="policy-box"></p>
+          <input id="adults" type="hidden"><input id="children" type="hidden"><input id="rooms" type="hidden">
+                    <section class="policy-box">
             <h3>Guest verification & discounts</h3>
             <p>
               Bring an original government photo ID for staff verification. No ID images are stored
@@ -110,7 +88,7 @@
                 placeholder="One guest per line: Maria Santos — Senior"
               ></textarea
               ><small
-                >Only list guests staying in this room. Bring original senior/PWD IDs on arrival.
+                >Only list guests included in this reservation. Bring original senior/PWD IDs on arrival.
                 Staff review the eligible share. Discounts do not automatically apply to the whole
                 group or stack for the same person.</small
               >

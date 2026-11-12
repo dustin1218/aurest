@@ -2366,3 +2366,15 @@ td select {
   background: var(--mint);
   color: var(--green);
 }
+
+/* Circular checkbox selection retains native keyboard and screen-reader support. */
+.selectable { position: relative; cursor: pointer; }
+.selectable.selected { outline: 3px solid #8b6b43; outline-offset: 2px; }
+.room-select { display:flex; align-items:center; gap:10px; padding:14px; cursor:pointer; font-weight:600; }
+.room-select input { appearance:none; flex:none; width:24px; height:24px; border:2px solid #806b50; border-radius:50%; margin:0; display:grid; place-content:center; background:white; }
+.room-select input:checked { background:#665036; border-color:#665036; }
+.room-select input:checked::after { content:'✓'; color:white; font-size:17px; }
+.room-select input:focus-visible { outline:3px solid #266dab; outline-offset:3px; }
+.selection-bar { position:sticky; bottom:12px; z-index:5; display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:18px; margin-top:24px; border:1px solid #d5c8b6; border-radius:12px; background:#fffaf2; box-shadow:0 6px 24px #0002; }
+#selection-summary { flex:1 1 250px; }
+@media(max-width:600px) { .selection-bar { position:static; } .selection-bar button { width:100%; } }
