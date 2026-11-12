@@ -118,15 +118,19 @@ occDate.addEventListener("change", drawOccupancy);
 function drawOccupancy() {
   const box = document.getElementById("occupancy");
   const day = occDate.value || addDays(0);
-  const all = getRooms();
+  const types = getRooms();
   // A room is occupied on a night when it has a Pending or Confirmed stay that starts on or before it and ends after it (check-out day is free).
-  const busy = new Set(
-    chartBookings
-      .filter((b) => b.status !== "Cancelled" && b.checkin <= day && day < b.checkout)
-      .map((b) => b.roomId),
-  );
-  const used = all.filter((r) => busy.has(r.id));
-  const pct = all.length ? Math.round((used.length / all.length) * 100) : 0;
+  // Each room type has several rooms ("units"), and one booking can hold more than one of them.
+  const held = {};
+  chartBookings
+    .filter((b) => b.status !== "Cancelled" && b.checkin <= day && day < b.checkout)
+    .forEach((b) => (held[b.roomId] = (held[b.roomId] || 0) + roomQty(b)));
+  const used = types
+    .filter((r) => held[r.id])
+    .map((r) => ({ name: r.name, n: Math.min(held[r.id], roomUnits(r)) }));
+  const totalRooms = types.reduce((n, r) => n + roomUnits(r), 0);
+  const usedRooms = used.reduce((n, u) => n + u.n, 0);
+  const pct = totalRooms ? Math.round((usedRooms / totalRooms) * 100) : 0;
   const label = new Date(day + "T00:00").toLocaleDateString("en-GB", {
     weekday: "short",
     day: "numeric",
@@ -134,11 +138,11 @@ function drawOccupancy() {
     year: "numeric",
   });
 
-  box.innerHTML = all.length
-    ? `<p class="occ-figure"><b>${used.length}</b> of ${plural(all.length, "room")} occupied</p>
-       <div class="meter" role="meter" aria-label="Occupied rooms" aria-valuemin="0" aria-valuemax="${all.length}" aria-valuenow="${used.length}"
-            aria-valuetext="${used.length} of ${all.length} rooms occupied, ${pct}%"><span style="width:${pct}%"></span></div>
+  box.innerHTML = totalRooms
+    ? `<p class="occ-figure"><b>${usedRooms}</b> of ${plural(totalRooms, "room")} occupied</p>
+       <div class="meter" role="meter" aria-label="Occupied rooms" aria-valuemin="0" aria-valuemax="${totalRooms}" aria-valuenow="${usedRooms}"
+            aria-valuetext="${usedRooms} of ${totalRooms} rooms occupied, ${pct}%"><span style="width:${pct}%"></span></div>
        <p class="occ-note">${pct}% occupied on ${esc(label)}. Pending and Confirmed bookings count; a guest checking out that day does not.</p>
-       ${used.length ? `<div class="occ-rooms" aria-label="Occupied rooms">${used.map((r) => `<span class="tag">${esc(r.name)}</span>`).join("")}</div>` : ""}`
+       ${used.length ? `<div class="occ-rooms" aria-label="Occupied rooms">${used.map((u) => `<span class="tag">${esc(u.name)}${u.n > 1 ? " × " + u.n : ""}</span>`).join("")}</div>` : ""}`
     : `<p class="viz-empty">No rooms are listed yet.</p>`;
 }

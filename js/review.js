@@ -5,13 +5,15 @@ const d = store.get("aurest-draft");
 const room = d && d.first && getRooms().find((r) => r.id === d.roomId);
 if (!room) location.replace("index.html#rooms"); // sends people back to start if nothing to review
 
-const n = nightsBetween(d.checkin, d.checkout),
-  total = room.price * n;
+const qty = Math.max(1, +d.rooms || 1),
+  n = nightsBetween(d.checkin, d.checkout),
+  total = room.price * n * qty;
 $("#review-list").innerHTML = [
   ["Name", `${d.first} ${d.last}`],
   ["Email", d.email],
-  ["Contact number", d.phone],
+  ["Contact number", d.phone || "Not provided"],
   ["Guests", `${plural(d.adults, "adult")}, ${plural(d.children, "child", "children")}`],
+  ["Rooms", plural(qty, "room")],
   ["Check-in", fmtDate(d.checkin)],
   ["Check-out", fmtDate(d.checkout)],
   ["Senior / PWD guests", d.discountGuests || "None"],
@@ -22,21 +24,31 @@ $("#review-list").innerHTML = [
 $("#sum-img").src = room.photo;
 $("#sum-img").alt = room.name;
 $("#sum-name").textContent = room.name;
-$("#sum-meta").textContent = `${room.bed} · ${room.size} m² · ${room.guests} guests`;
-$("#sum-calc").textContent = `${peso(room.price)} × ${plural(n, "night")}`;
+$("#sum-meta").textContent = `${room.bed} · ${room.size} m² · ${room.guests} guests per room`;
+$("#sum-calc").textContent =
+  `${peso(room.price)} × ${plural(n, "night")}` + (qty > 1 ? ` × ${plural(qty, "room")}` : "");
 $("#sum-sub").textContent = $("#sum-total").textContent = peso(total);
 
 $("#confirm").addEventListener("click", async () => {
   const ok = await confirmDialog({
     title: "Confirm your reservation?",
-    message: `${room.name}, ${fmtDate(d.checkin)} to ${fmtDate(d.checkout)} (${plural(n, "night")}), total ${peso(total)}. It stays Pending until the hotel confirms it.`,
+    message: `${qty > 1 ? qty + " × " : ""}${room.name}, ${fmtDate(d.checkin)} to ${fmtDate(d.checkout)} (${plural(n, "night")}), total ${peso(total)}. It stays Pending until the hotel confirms it.`,
     confirmText: "Yes, reserve",
     cancelText: "Go back",
   });
   if (!ok) return;
-  // Recheck room availability immediately before saving, since it may have changed during review.
-  if (!available(room.id, d.checkin, d.checkout)) {
-    toast("This room is already reserved on those dates. Please choose another stay.");
+  // Recheck free rooms and capacity immediately before saving, since bookings may have changed during review.
+  const free = roomsFree(room.id, d.checkin, d.checkout);
+  if (free < qty) {
+    toast(
+      free
+        ? `Only ${plural(free, "room")} of this type ${free === 1 ? "is" : "are"} still free on those dates. Please edit your details.`
+        : "This room type is now fully booked on those dates. Please choose another stay.",
+    );
+    return;
+  }
+  if (d.adults + d.children > room.guests * qty || d.adults < qty) {
+    toast("Your guests no longer fit these rooms. Please edit your details.");
     return;
   }
   const list = store.get("aurest-bookings", []);
@@ -54,9 +66,10 @@ $("#confirm").addEventListener("click", async () => {
     guests: d.adults + d.children,
     adults: d.adults,
     children: d.children,
+    rooms: qty,
     discountGuests: d.discountGuests || "",
     paymentPlan: $('[name="payment-plan"]:checked').value,
-    nightlyRate: room.price,
+    nightlyRate: room.price, // per room
     policyVersion: 1,
     requests: d.requests || "",
     total,

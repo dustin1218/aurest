@@ -58,6 +58,60 @@ const getSearch = () =>
 const plural = (n, w, pl = w + "s") => `${n} ${n === 1 ? w : pl}`;
 // Allow only local page redirects after sign-in rather than arbitrary external URLs.
 const safeNext = (n) => (/^[a-z-]+\.html(\?[\w=&.-]*)?$/i.test(n || "") ? n : "index.html");
+// Letters, numbers and . _ % + - before the @; a dotted domain ending in letters, such as name@mail.com.
+const EMAIL_RE =
+  /^[A-Za-z0-9_%+-]+(\.[A-Za-z0-9_%+-]+)*@([A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/;
+
+// Read an image and shrink its longest side so it fits in browser storage.
+function readImage(file, max = 1100, quality = 0.82) {
+  return new Promise((ok, fail) => {
+    if (!/^image\/(png|jpe?g|webp)$/.test(file.type))
+      return fail(new Error("Please choose a JPG, PNG or WebP image."));
+    const fr = new FileReader();
+    fr.onerror = () => fail(new Error("That file couldn't be read."));
+    fr.onload = () => {
+      const img = new Image();
+      img.onerror = () => fail(new Error("That image couldn't be opened."));
+      img.onload = () => {
+        const k = Math.min(1, max / Math.max(img.width, img.height)),
+          c = document.createElement("canvas");
+        c.width = Math.round(img.width * k);
+        c.height = Math.round(img.height * k);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        ok(c.toDataURL("image/jpeg", quality));
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+// ----- Ask before a reload or tab close throws away what was typed -----
+// Browsers show their own fixed wording, and only after the person has interacted with the page.
+// Clicking a link inside the site does not ask, because form drafts survive that (see below).
+const unsavedForms = new Set();
+let leavingOnPurpose = false;
+function leavePage(url) {
+  leavingOnPurpose = true;
+  if (url) location.href = url;
+  else location.reload();
+}
+window.addEventListener("beforeunload", (e) => {
+  if (leavingOnPurpose || !unsavedForms.size) return;
+  e.preventDefault();
+  e.returnValue = ""; // older browsers need this to show the prompt
+});
+document.addEventListener("click", (e) => {
+  const a = e.target.closest && e.target.closest("a[href]");
+  const toOtherPage =
+    a &&
+    !a.target &&
+    a.origin === location.origin &&
+    (a.pathname !== location.pathname || a.search !== location.search);
+  if (!toOtherPage || e.defaultPrevented) return;
+  leavingOnPurpose = true;
+  setTimeout(() => (leavingOnPurpose = false), 1500); // in case the page stays open after all
+});
 
 // Keep what was typed in a form across a page refresh, for this browser tab only.
 // Passwords are never saved, and browsers do not allow file inputs to be refilled.
@@ -94,11 +148,16 @@ function keepFormOnRefresh(form, scope = "") {
         if (value.trim()) restored = true;
       }
     });
+  const markUnsaved = () => unsavedForms.add(form);
   form.addEventListener("input", save);
   form.addEventListener("change", save);
+  form.addEventListener("input", markUnsaved);
+  form.addEventListener("change", markUnsaved);
+  if (restored) markUnsaved();
   return {
     restored,
     clear() {
+      unsavedForms.delete(form);
       try {
         sessionStorage.removeItem(key);
       } catch {}
@@ -135,18 +194,20 @@ function toast(msg) {
   document.body.appendChild(t);
   setTimeout(() => t.remove(), Math.max(3200, msg.length * 70));
 }
-function roomCard(r) {
+// `note` is optional extra text for the meta line, such as how many rooms are left.
+function roomCard(r, note = "") {
   return `<article class="card">
     <img src="${r.photo}" alt="${esc(r.name)}: ${esc(r.bed)}" loading="lazy">
     <div class="card-body">
       <h3>${esc(r.name)}</h3><p>${esc(r.desc)}</p>
-      <div class="meta">${r.guests} guests · ${esc(r.bed)} · ${r.size} m²</div>
+      <div class="meta">${r.guests} guests · ${esc(r.bed)} · ${r.size} m²${note ? " · " + esc(note) : ""}</div>
       <div class="card-foot"><span class="price">${peso(r.price)} <small>/ night</small></span>
       <a class="btn" href="room-details.html?id=${r.id}" aria-label="View ${esc(r.name)}">View room</a></div>
     </div></article>`;
 }
 
 // ----- On-theme confirmation dialog (returns true if the person confirms) -----
+// Pass cancelText: null for a message with a single button.
 function confirmDialog({
   title,
   message,
@@ -160,7 +221,7 @@ function confirmDialog({
     ov.className = "modal-overlay";
     ov.innerHTML = `<div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="m-title" aria-describedby="m-msg">
       <h2 id="m-title">${esc(title)}</h2><p id="m-msg">${esc(message)}</p>
-      <div class="modal-actions"><button type="button" class="btn-outline" data-no>${esc(cancelText)}</button>
+      <div class="modal-actions">${cancelText === null ? "" : `<button type="button" class="btn-outline" data-no>${esc(cancelText)}</button>`}
       <button type="button" class="btn${danger ? " danger" : ""}" data-yes>${esc(confirmText)}</button></div></div>`;
     document.body.appendChild(ov);
     const done = (v) => {
@@ -183,9 +244,9 @@ function confirmDialog({
     ov.addEventListener("click", (e) => {
       if (e.target === ov) done(false);
     });
-    $("[data-no]", ov).onclick = () => done(false);
+    if ($("[data-no]", ov)) $("[data-no]", ov).onclick = () => done(false);
     $("[data-yes]", ov).onclick = () => done(true);
-    $(danger ? "[data-no]" : "[data-yes]", ov).focus(); // risky actions focus the safe button first
+    ($(danger ? "[data-no]" : "[data-yes]", ov) || $("[data-yes]", ov)).focus(); // risky actions focus the safe button first
   });
 }
 
@@ -299,7 +360,7 @@ function updateNavAvatar() {
         if (ok) {
           store.del("aurest-user");
           clearAllFormDrafts();
-          location.href = "index.html";
+          leavePage("index.html");
         }
       });
 
@@ -332,6 +393,41 @@ function updateNavAvatar() {
     ftr.innerHTML = `AUREST · Where Comfort Meets Care.<p>Thoughtful spaces. Warm welcomes. Restful stays.</p>
       <nav aria-label="Footer"><a href="${base}#rooms">Rooms</a><a href="${base}#about">About</a><a href="${base}#contact">Contact</a></nav>`;
   }
+})();
+
+// ----- One signed-in account per browser -----
+// Regular tabs share localStorage, so signing in to another account in any tab has already replaced
+// this tab's session. Tell the person, drop this tab's unsent drafts, and reload as the current account.
+// Private (incognito) windows keep separate storage, so they cannot be linked without a server.
+(function watchSessionAcrossTabs() {
+  const startEmail = (getUser() || {}).email || "";
+  if (!startEmail) return; // nothing to sign out of in this tab
+  let handled = false;
+  async function check() {
+    const nowUser = getUser();
+    const nowEmail = (nowUser || {}).email || "";
+    if (handled || nowEmail === startEmail) return;
+    handled = true;
+    clearAllFormDrafts();
+    unsavedForms.clear();
+    await confirmDialog({
+      title: "You've been signed out",
+      message: nowEmail
+        ? `${startEmail} was signed out because ${nowEmail} signed in from another tab.`
+        : `${startEmail} was signed out from another tab.`,
+      confirmText: "OK",
+      cancelText: null,
+    });
+    leavePage();
+  }
+  window.addEventListener("storage", (e) => {
+    if (e.key === "aurest-user" || e.key === null) check();
+  });
+  // Backup for browsers that skip storage events, such as some pages opened from a file.
+  window.addEventListener("focus", check);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) check();
+  });
 })();
 
 // Clear a field's red error as soon as the person starts correcting it (it is re-checked on blur/submit)

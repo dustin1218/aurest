@@ -4,47 +4,73 @@ const me = getUser();
 const draft = store.get("aurest-draft");
 const bookRoom = draft && getRooms().find((r) => r.id === draft.roomId);
 
-if (!me) location.replace("login.html?next=booking.html");
-else if (!bookRoom)
-  location.replace("index.html#rooms"); // nothing to book, so start over
-else initBooking(me, draft, bookRoom);
+// ----- Philippine mobile numbers: 11 digits starting with 09, shown as 0912 345 6789 -----
+const PHONE_DIGITS = 11;
+const phoneDigits = (v) => String(v || "").replace(/\D/g, "");
+const formatPhone = (digits) =>
+  digits.length === PHONE_DIGITS
+    ? `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`
+    : digits;
+// Profile numbers may be saved as +63 9xx…; use them only if they become a valid 09 number.
+function phoneFromProfile(v) {
+  let d = phoneDigits(v);
+  if (/^639\d{9}$/.test(d)) d = "0" + d.slice(2);
+  return /^09\d{9}$/.test(d) ? formatPhone(d) : "";
+}
+// Keep digits only, stop at 11, and space the number out once it is complete.
+function limitPhoneInput(input) {
+  const caret = input.selectionStart ?? input.value.length;
+  const digitsBeforeCaret = phoneDigits(input.value.slice(0, caret)).length;
+  const digits = phoneDigits(input.value).slice(0, PHONE_DIGITS);
+  input.value = formatPhone(digits);
+  // Put the caret back after the same digit, so editing in the middle does not jump to the end.
+  let pos = 0,
+    seen = 0;
+  const target = Math.min(digitsBeforeCaret, digits.length);
+  while (pos < input.value.length && seen < target) {
+    if (/\d/.test(input.value[pos])) seen++;
+    pos++;
+  }
+  if (document.activeElement === input) input.setSelectionRange(pos, pos);
+}
+
+// The account's first and last name. Accounts made on the sign-up form store them separately;
+// older accounts, and names edited on the profile page, are split at the first space.
+function accountNameParts(user) {
+  const account = allUsers().find((u) => u.email === user.email) || {};
+  const full = (profileFor(user.email).name || user.name || account.name || "").trim();
+  if (account.firstName && `${account.firstName} ${account.lastName || ""}`.trim() === full)
+    return [account.firstName, account.lastName || ""];
+  const [first = "", ...rest] = full.split(/\s+/);
+  return [first, rest.join(" ")];
+}
 
 function initBooking(user, d, room) {
   const el = (id) => document.getElementById(id);
   const today = addDays(0);
-  const MAX_ADULTS = 8,
-    MAX_CHILDREN = 6; // same limits as the guests picker on the home page
-
-  // Drop-downs go up to the same limits as the home page picker, so a saved search always fits.
-  const fillSelect = (sel, from, to) => {
-    sel.innerHTML = Array.from(
-      { length: to - from + 1 },
-      (_, i) => `<option>${from + i}</option>`,
-    ).join("");
-  };
-  fillSelect(el("adults"), 1, MAX_ADULTS);
-  fillSelect(el("children"), 0, MAX_CHILDREN);
+  const isWhole = (v, min) => v !== "" && Number.isInteger(+v) && +v >= min;
 
   // Pre-fill: what was typed before (when coming back from the review page), otherwise the signed-in guest.
-  el("email").value = d.email ?? user.email ?? "";
-  el("phone").value = d.phone ?? profileFor(user.email).phone ?? "";
+  el("phone").value = d.phone != null ? d.phone : phoneFromProfile(profileFor(user.email).phone);
   el("discount-guests").value = d.discountGuests || "";
   el("requests").value = d.requests ?? "";
   el("checkin").value = d.checkin || getSearch().checkin;
   el("checkout").value = d.checkout || getSearch().checkout;
-  el("adults").value = Math.min(MAX_ADULTS, Math.max(1, +d.adults || 1));
-  el("children").value = Math.min(MAX_CHILDREN, Math.max(0, +d.children || 0));
+  el("adults").value = Math.max(1, Math.floor(+d.adults) || 1);
+  el("children").value = Math.max(0, Math.floor(+d.children) || 0);
+  el("rooms").value = Math.max(1, Math.floor(+d.rooms) || 1);
   // Scoped to this room and stay, so a new room or date choice is not overwritten by an old draft.
   const formDraft = keepFormOnRefresh(
     el("booking-form"),
-    [room.id, d.checkin, d.checkout, d.adults, d.children].join(),
+    [room.id, d.checkin, d.checkout, d.adults, d.children, d.rooms].join(),
   );
-  // The booking name always comes from the account. Set after the draft restore so nothing can replace it.
-  const accountName = (profileFor(user.email).name || user.name || "").trim();
-  if (accountName) {
-    const [accountFirst, ...accountRest] = accountName.split(/\s+/);
+  limitPhoneInput(el("phone")); // a restored draft gets the same digits-only format
+  // The email and booking name always come from the account. Set after the draft restore so nothing can replace them.
+  el("email").value = user.email;
+  const [accountFirst, accountLast] = accountNameParts(user);
+  if (accountFirst) {
     el("first").value = accountFirst;
-    el("last").value = accountRest.join(" ");
+    el("last").value = accountLast;
     [el("first"), el("last")].forEach((input) => {
       input.readOnly = true;
       input.classList.add("locked");
@@ -61,18 +87,21 @@ function initBooking(user, d, room) {
   el("sum-img").src = room.photo;
   el("sum-img").alt = room.name;
   el("sum-name").textContent = room.name;
-  el("sum-meta").textContent = `${room.bed} · ${room.size} m² · ${room.guests} guests`;
+  el("sum-meta").textContent = `${room.bed} · ${room.size} m² · ${room.guests} guests per room`;
   function drawSummary() {
     const a = el("checkin").value,
       b = el("checkout").value,
-      n = a && b ? nightsBetween(a, b) : 0;
+      n = a && b ? nightsBetween(a, b) : 0,
+      qty = isWhole(el("rooms").value, 1) ? +el("rooms").value : 0;
     el("sum-in").textContent = a ? fmtDate(a) : "—";
     el("sum-out").textContent = b ? fmtDate(b) : "—";
-    if (n > 0) {
-      el("sum-calc").textContent = `${peso(room.price)} × ${plural(n, "night")}`;
-      el("sum-sub").textContent = el("sum-total").textContent = peso(room.price * n);
+    el("sum-rooms").textContent = qty ? plural(qty, "room") : "—";
+    if (n > 0 && qty) {
+      el("sum-calc").textContent =
+        `${peso(room.price)} × ${plural(n, "night")}` + (qty > 1 ? ` × ${plural(qty, "room")}` : "");
+      el("sum-sub").textContent = el("sum-total").textContent = peso(room.price * n * qty);
     } else {
-      el("sum-calc").textContent = "Choose your dates";
+      el("sum-calc").textContent = n > 0 ? "Choose how many rooms" : "Choose your dates";
       el("sum-sub").textContent = el("sum-total").textContent = "—";
     }
   }
@@ -88,29 +117,27 @@ function initBooking(user, d, room) {
     drawSummary();
   });
   el("checkout").addEventListener("change", drawSummary);
+  el("rooms").addEventListener("input", drawSummary);
+  el("phone").addEventListener("input", () => limitPhoneInput(el("phone")));
   drawSummary();
 
   // Validation
-  const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const datesOk = () =>
+    el("checkin").value >= today &&
+    el("checkout").value > el("checkin").value;
+  const freeRooms = () => roomsFree(room.id, el("checkin").value, el("checkout").value);
   const rules = {
     first: () => (el("first").value.trim() ? "" : "Please enter your first name."),
     // A locked one-word account name has no last name, and the guest could not type one anyway.
     last: () =>
       el("last").value.trim() || el("last").readOnly ? "" : "Please enter your last name.",
-    email: () =>
-      !el("email").value.trim()
-        ? "Please enter your email."
-        : EMAIL.test(el("email").value.trim())
-          ? ""
-          : "Please enter a valid email address.",
+    // Optional, but when given it must be a complete 09 mobile number.
     phone: () => {
-      const v = el("phone").value.trim(),
-        digits = v.replace(/\D/g, "").length;
-      return !v
-        ? "Please enter a contact number."
-        : /[^\d\s+()-]/.test(v) || digits < 7 || digits > 15
-          ? "Please enter a valid contact number."
-          : "";
+      const digits = phoneDigits(el("phone").value);
+      if (!digits) return "";
+      if (digits[0] !== "0" || (digits.length > 1 && digits[1] !== "9"))
+        return "Contact number must start with 09.";
+      return digits.length === PHONE_DIGITS ? "" : "Contact number must be exactly 11 digits.";
     },
     checkin: () =>
       !el("checkin").value
@@ -123,13 +150,31 @@ function initBooking(user, d, room) {
         ? "Choose a check-out date."
         : el("checkout").value <= el("checkin").value
           ? "Check-out must be after check-in."
-          : !available(room.id, el("checkin").value, el("checkout").value)
-            ? "This room is already reserved on those dates. Please choose other dates."
+          : !freeRooms()
+            ? "This room type is fully booked on those dates. Please choose other dates."
             : "",
-    adults: () =>
-      +el("adults").value + +el("children").value > room.guests
-        ? `${room.name} fits up to ${plural(room.guests, "guest")}. Choose fewer guests or another room.`
-        : "",
+    adults: () => (isWhole(el("adults").value, 1) ? "" : "Enter at least 1 adult."),
+    children: () => (isWhole(el("children").value, 0) ? "" : "Enter 0 or more children."),
+    // Checked against the rooms actually free for these dates and how many guests they hold.
+    rooms: () => {
+      const qty = el("rooms").value;
+      if (!isWhole(qty, 1)) return "Enter at least 1 room.";
+      const adults = +el("adults").value,
+        guestsTotal = adults + +el("children").value;
+      if (isWhole(el("adults").value, 1) && +qty > adults) return "Each room needs at least one adult.";
+      if (datesOk()) {
+        const free = freeRooms();
+        if (free && +qty > free)
+          return `Only ${plural(free, "room")} of this type ${free === 1 ? "is" : "are"} free on those dates.`;
+      }
+      if (
+        isWhole(el("adults").value, 1) &&
+        isWhole(el("children").value, 0) &&
+        guestsTotal > room.guests * qty
+      )
+        return `${plural(+qty, "room")} of this type ${+qty === 1 ? "fits" : "fit"} up to ${plural(room.guests * qty, "guest")}. Add rooms or choose fewer guests.`;
+      return "";
+    },
   };
   const run = (k) => setError(el(k), rules[k]());
   Object.keys(rules).forEach((k) =>
@@ -137,11 +182,19 @@ function initBooking(user, d, room) {
       if (el(k).value) run(k);
     }),
   );
-  el("children").addEventListener("change", () => run("adults")); // the guest limit depends on both drop-downs
-  el("adults").addEventListener("change", () => run("adults"));
+  // The room check depends on the guest counts and dates, so recheck it when any of them change.
+  ["adults", "children", "rooms"].forEach((k) =>
+    el(k).addEventListener("change", () => {
+      run(k);
+      if (el("rooms").value) run("rooms");
+    }),
+  );
   ["checkin", "checkout"].forEach((k) =>
     el(k).addEventListener("change", () => {
-      if (el("checkin").value && el("checkout").value) run("checkout"); // report a clash as soon as dates change
+      if (el("checkin").value && el("checkout").value) {
+        run("checkout"); // report a clash as soon as dates change
+        run("rooms");
+      }
     }),
   );
   if (formDraft.restored)
@@ -163,16 +216,24 @@ function initBooking(user, d, room) {
       roomId: room.id,
       first: el("first").value.trim(),
       last: el("last").value.trim(),
-      email: el("email").value.trim(),
-      phone: el("phone").value.trim(),
+      email: user.email,
+      phone: formatPhone(phoneDigits(el("phone").value)),
       checkin: el("checkin").value,
       checkout: el("checkout").value,
       adults: +el("adults").value,
       children: +el("children").value,
+      rooms: +el("rooms").value,
       discountGuests: el("discount-guests").value.trim(),
       requests: el("requests").value.trim(),
+      paymentPlan: d.paymentPlan,
     });
     formDraft.clear();
     location.href = "review.html";
   });
 }
+
+// Start last, once the helpers above exist.
+if (!me) location.replace("login.html?next=booking.html");
+else if (!bookRoom)
+  location.replace("index.html#rooms"); // nothing to book, so start over
+else initBooking(me, draft, bookRoom);

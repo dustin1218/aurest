@@ -7,7 +7,21 @@ if (!room) {
   $("#crumb-room").textContent = room.name;
   const s = getSearch(),
     n = nightsBetween(s.checkin, s.checkout),
-    free = available(room.id, s.checkin, s.checkout);
+    qty = Math.max(1, +s.rooms || 1),
+    left = roomsFree(room.id, s.checkin, s.checkout),
+    free = left >= qty;
+  const bookLabel = free
+    ? qty > 1
+      ? `Reserve ${qty} rooms`
+      : "Reserve this room"
+    : left
+      ? `Only ${left} left on these dates`
+      : "Not available on these dates";
+  // Each bed type is its own feature tag, the same as amenities.
+  const beds = room.bed
+    .split(",")
+    .map((b) => b.trim())
+    .filter(Boolean);
   wrap.innerHTML = `
     <div class="detail">
       <div>
@@ -24,11 +38,11 @@ if (!room) {
         <div class="meta">${room.guests} guests · ${esc(room.bed)} · ${room.size} m²</div>
         <p class="lead">${esc(room.desc)}</p>
         <span class="price">${peso(room.price)} <small>/ night</small></span>
-        <div class="stay-line">Your stay: <b>${fmtDate(s.checkin)} – ${fmtDate(s.checkout)}</b> (${plural(n, "night")}) · Total <b>${peso(room.price * n)}</b><br><a href="index.html#home">Change dates</a></div>
-        <button class="btn block" id="reserve" type="button"${free ? "" : " disabled"}>${free ? "Reserve this room" : "Not available on these dates"}</button>
+        <div class="stay-line">Your stay: <b>${fmtDate(s.checkin)} – ${fmtDate(s.checkout)}</b> (${plural(n, "night")}${qty > 1 ? ", " + plural(qty, "room") : ""}) · Total <b>${peso(room.price * n * qty)}</b><br>${plural(left, "room")} of this type free for these dates · <a href="index.html#home">Change dates or rooms</a></div>
+        <button class="btn block" id="reserve" type="button"${free ? "" : " disabled"}>${bookLabel}</button>
       </aside>
     </div>
-    <ul class="amenities" aria-label="Room features"><li>${esc(room.bed)}</li><li>${room.size} m²</li>${room.amenities.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>`;
+    <ul class="amenities" aria-label="Room features">${beds.map((b) => `<li>${esc(b)}</li>`).join("")}<li>${room.size} m²</li>${room.amenities.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>`;
   $$(".thumb").forEach((t) =>
     t.addEventListener("click", () => {
       $("#main-photo").src = room.gallery[t.dataset.i];
@@ -43,6 +57,7 @@ if (!room) {
       checkout: s.checkout,
       adults: s.adults,
       children: s.children,
+      rooms: qty,
     });
     location.href = getUser() ? "booking.html" : "login.html?next=booking.html";
   });

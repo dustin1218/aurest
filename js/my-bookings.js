@@ -10,7 +10,7 @@ function paymentAction(b) {
     .reduce((sum, t) => sum + t.amount, 0);
   if (pending >= m.balance)
     return '<span class="payment-note" role="status">Payment submitted — awaiting staff verification.</span>';
-  return `<button class="btn-outline" data-pay="${b.id}">Submit payment reference</button>`;
+  return `<button class="btn-outline" data-pay="${b.id}">Submit payment</button>`;
 }
 function draw() {
   const list = myBookings().sort((a, b) => b.id.localeCompare(a.id));
@@ -18,12 +18,12 @@ function draw() {
     list
       .map((b) => {
         const r = getAllRooms().find((r) => r.id === b.roomId);
-        return `<article class="cart-item"><img src="${r?.photo || "images/room-classic.jpg"}" alt=""><div><h3>${esc(b.roomName || r?.name || b.roomId)}</h3><p>${fmtDate(b.checkin)} – ${fmtDate(b.checkout)} · ${b.guests} guests · ${b.id}</p><p>${esc(paymentSummary(b))}</p><p>ID: ${esc(b.identityStatus || "Bring original ID for verification")} · Discount: ${esc(b.discountStatus || (b.discountGuests ? "Awaiting original IDs / staff review" : "None requested"))}</p><div class="actions">${b.status !== "Cancelled" && b.checkin >= addDays(0) ? `${paymentAction(b)}<button class="btn-outline" data-reschedule="${b.id}">Reschedule</button><button class="btn-danger" data-cancel="${b.id}">Cancel booking</button>` : ""}</div><details><summary>Transactions</summary>${
+        return `<article class="cart-item"><img src="${r?.photo || "images/room-classic.jpg"}" alt=""><div><h3>${esc(b.roomName || r?.name || b.roomId)}${roomQty(b) > 1 ? " × " + roomQty(b) : ""}</h3><p>${fmtDate(b.checkin)} – ${fmtDate(b.checkout)} · ${b.guests} guests${roomQty(b) > 1 ? " · " + plural(roomQty(b), "room") : ""} · ${b.id}</p><p>${esc(paymentSummary(b))}</p><p>ID: ${esc(b.identityStatus || "Bring original ID for verification")} · Discount: ${esc(b.discountStatus || (b.discountGuests ? "Awaiting original IDs / staff review" : "None requested"))}</p><div class="actions">${b.status !== "Cancelled" && b.checkin >= addDays(0) ? `${paymentAction(b)}<button class="btn-outline" data-reschedule="${b.id}">Reschedule</button><button class="btn-danger" data-cancel="${b.id}">Cancel booking</button>` : ""}</div><details><summary>Transactions</summary>${
           transactions()
             .filter((t) => t.bookingId === b.id)
             .map(
               (t) =>
-                `<p>${esc(t.kind)} · ${peso(t.amount)} · ${esc(t.status)} · ${esc(t.reference)}</p>`,
+                `<p>${esc(t.kind)} · ${peso(t.amount)} · ${esc(t.status)} · ${esc(txRef(t))}</p>`,
             )
             .join("") || "<p>No transactions yet.</p>"
         }</details></div><div>${statusChip(b.status)}</div></article>`;
@@ -87,28 +87,60 @@ $("#cart-list").onclick = async (e) => {
       Math.max(0, (b.paymentPlan === "full" ? m.total : m.total * 0.3) - m.net - pending) ||
         remaining,
     );
-    financeDialog(
-      "Submit payment reference",
-      `<p>Amount remaining to submit: ${peso(remaining)}. Send it to: ${esc(hotelInfo.payTo)}. Staff will verify the transfer; this form does not charge you.</p><label>Amount (₱)<input name="amount" type="number" min="0.01" max="${remaining}" step="0.01" value="${due.toFixed(2)}" required></label><label>Method<select name="method"><option>Bank transfer</option><option>GCash</option><option>Cash at front desk</option></select></label><label>Transfer / receipt reference<input name="reference" maxlength="100" required></label>`,
-      (d) => {
+    // Proof of a transfer is a typed reference, a receipt photo, or both. Cash is paid at the desk,
+    // so it needs neither and those fields are hidden.
+    const form = financeDialog(
+      "Submit payment",
+      `<p>Amount remaining to submit: ${peso(remaining)}. Send it to: ${esc(hotelInfo.payTo)}. Staff will verify the payment; this form does not charge you.</p><label>Amount (₱)<input name="amount" type="number" min="0.01" max="${remaining}" step="0.01" value="${due.toFixed(2)}" required></label><label>Method<select name="method"><option>Bank transfer</option><option>GCash</option><option>Cash at front desk</option></select></label><div data-proof><label>Transfer / receipt reference<input name="reference" maxlength="100"></label><label>Or upload a receipt image<input name="receipt" type="file" accept="image/png,image/jpeg,image/webp"></label><small class="hint">Enter the reference, upload a photo or screenshot of the receipt, or both. JPG, PNG or WebP.</small></div>`,
+      async (d) => {
         const amount = Number(d.get("amount")),
-          reference = d.get("reference").trim();
-        if (!(amount > 0 && amount <= remaining) || !reference)
-          throw Error("Enter a valid amount and reference.");
-        if (transactions().some((t) => t.reference === reference && t.status !== "Rejected"))
+          method = d.get("method"),
+          cash = method === "Cash at front desk",
+          reference = cash ? "" : (d.get("reference") || "").trim(),
+          file = cash ? null : d.get("receipt");
+        const hasFile = file && file.size > 0;
+        if (!(amount > 0 && amount <= remaining)) throw Error("Enter a valid amount.");
+        if (!cash && !reference && !hasFile)
+          throw Error("Enter the transfer reference or upload a receipt image.");
+        if (
+          reference &&
+          transactions().some((t) => t.reference === reference && t.status !== "Rejected")
+        )
           throw Error("This reference has already been submitted.");
-        addTransaction({
-          bookingId: id,
-          kind: "Payment",
-          amount,
-          method: d.get("method"),
-          reference,
-          status: "Submitted",
-        });
+        if (hasFile && file.size > 10 * 1024 * 1024)
+          throw Error("Choose a receipt image up to 10 MB.");
+        // Shrunk so it fits in browser storage while staying readable.
+        const receiptImage = hasFile ? await readImage(file, 1400, 0.75) : "";
+        try {
+          addTransaction({
+            bookingId: id,
+            kind: "Payment",
+            amount,
+            method,
+            reference,
+            ...(receiptImage && { receiptImage }),
+            status: "Submitted",
+          });
+        } catch {
+          throw Error("Browser storage is full, so the receipt couldn't be saved. Try a smaller image.");
+        }
         draw();
-        toast("Reference submitted. Staff will verify your payment.");
+        toast(
+          cash
+            ? "Noted. Pay at the front desk; staff will record it."
+            : "Payment submitted. Staff will verify it.",
+        );
       },
     );
+    const method = $('[name="method"]', form),
+      proof = $("[data-proof]", form);
+    const syncProof = () => {
+      const cash = method.value === "Cash at front desk";
+      proof.hidden = cash;
+      $$("input", proof).forEach((i) => (i.disabled = cash)); // also skipped by Tab while hidden
+    };
+    method.addEventListener("change", syncProof);
+    syncProof();
     return;
   }
   rescheduleReservation(b, draw);

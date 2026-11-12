@@ -4,7 +4,11 @@ Open `index.html` in a browser or serve this directory with any static web serve
 
 ## Payments and reservations
 
-- Guests choose a 30% deposit or full payment on the review page. This is a manual transfer workflow: submit amount, method and reference in My bookings. Staff verify receipt in Admin → Payments. Submissions alone never count as money received.
+- Each room type has a number of rooms (`units` in `js/data.js`, or "Number of rooms" when an admin adds a room). Guests choose any number of adults, children and rooms. A search only lists types with enough rooms free on every night of the stay whose combined capacity fits the group, and each room needs at least one adult. One booking holds several rooms of one type; the booking and review pages check free rooms and capacity again before saving.
+- Guests choose a 30% deposit or full payment on the review page. This is a manual transfer workflow: submit the amount and method in My bookings, with a transfer reference, a receipt image, or both. Cash at the front desk needs neither. Staff open uploaded receipts and verify them in Admin → Payments. Submissions alone never count as money received.
+- The booking email always comes from the signed-in account. The contact number is optional; when given it must be an 11-digit number starting with 09, shown as `0912 345 6789`.
+- Signing in to a different account in another tab signs this tab's account out, with a notice. Private/incognito windows have separate storage and cannot be linked without a server.
+- Forms ask before a reload or tab close when something has been typed. Browsers control the wording and only show it after the person has interacted with the page.
 - Booking confirmation requires the selected payment threshold and a recorded original-ID check. Users bring their original government photo ID; staff manually match the name. This is not automated identity authentication.
 - Draft cancellation policy: refundable at least 48 hours before 2 PM Asia/Manila check-in. Otherwise retain the lesser of 30% of the adjusted room total and verified money still held. Any remaining refund goes into the admin queue. Staff send money outside the app and record the refund reference afterward.
 - Rescheduling is available before arrival, subject to room availability, and carries verified payments forward at the saved nightly rate. Additional nights create a balance; excess money creates a refund request. Pending transfers/refunds must be reviewed first. Staff must review discount eligibility again.
@@ -18,7 +22,7 @@ This is a local browser prototype. Accounts, roles, transactions and verificatio
 
 ## Validation
 
-Run `node tests/finance.test.cjs` from the project root. It checks JavaScript syntax, submitted versus verified payments, deposit balances, cancellation windows and fees, refund requests, duplicate refunds, and refund completion.
+Run `node tests/finance.test.cjs` from the project root. It checks JavaScript syntax, submitted versus verified payments, deposit balances, cancellation windows and fees, refund requests, duplicate refunds, refund completion, free rooms per room type, and multi-room totals.
 
 Browser checks also covered booking → review → confirmation, guest payment submission → admin verification, rescheduling with payment carry-forward, cancellation refunds, profile saves, check-in range shading and locked check-in dates during check-out selection.
 

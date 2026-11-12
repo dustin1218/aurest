@@ -259,11 +259,26 @@
                 ></small>
               </div>
               <div class="field">
-                <label for="r-bed">Bed type</label
-                ><input id="r-bed" placeholder="e.g. 1 king bed" /><small
-                  class="error"
-                  id="r-bed-error"
-                ></small>
+                <label for="r-units">Number of rooms</label
+                ><input
+                  id="r-units"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="3"
+                  aria-describedby="r-units-hint"
+                /><small class="hint" id="r-units-hint"
+                  >How many rooms of this type guests can book.</small
+                ><small class="error" id="r-units-error"></small>
+              </div>
+              <div class="field">
+                <label for="r-bed">Bed types</label
+                ><input
+                  id="r-bed"
+                  placeholder="1 king bed, 2 single beds"
+                  aria-describedby="r-bed-hint"
+                /><small class="hint" id="r-bed-hint">Separate with commas.</small
+                ><small class="error" id="r-bed-error"></small>
               </div>
               <div class="field">
                 <label for="r-size">Size (m²)</label
@@ -300,7 +315,7 @@
                 <div class="previews" id="thumb-prev"></div>
               </div>
               <div class="field">
-                <label for="more-files">More photos for the details page (up to 5)</label
+                <label for="more-files">More photos for the details page</label
                 ><input
                   id="more-files"
                   type="file"
@@ -327,6 +342,7 @@
                   <th>ID</th>
                   <th>Room</th>
                   <th>Capacity</th>
+                  <th>Rooms</th>
                   <th>Rate</th>
                   <th>Source</th>
                   <th>Action</th>

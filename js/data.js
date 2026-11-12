@@ -9,13 +9,15 @@ const hotelInfo = {
   payTo: "BDO 0000 0000 0000 or GCash 0900 000 0000 (AUREST Hotel, sample details)",
 };
 
-// Default rooms. Rooms the admin adds are saved separately in the browser.
+// Default room types. "units" is how many rooms of that type the hotel has; guests can book
+// several of them in one reservation. Rooms the admin adds are saved separately in the browser.
 const rooms = [
   {
     id: "R001",
     name: "Classic Room",
     price: 2800,
     guests: 2,
+    units: 5,
     bed: "1 queen bed",
     size: 28,
     photo: "images/room-classic.jpg",
@@ -28,6 +30,7 @@ const rooms = [
     name: "Deluxe Room",
     price: 3900,
     guests: 2,
+    units: 4,
     bed: "1 king bed",
     size: 36,
     photo: "images/room-deluxe.jpg",
@@ -40,6 +43,7 @@ const rooms = [
     name: "Premier Suite",
     price: 5600,
     guests: 4,
+    units: 2,
     bed: "2 beds",
     size: 52,
     photo: "images/room-premier.jpg",
@@ -55,6 +59,7 @@ const rooms = [
     name: "Cozy Single",
     price: 1900,
     guests: 1,
+    units: 4,
     bed: "1 single bed",
     size: 18,
     photo: "images/room-classic.jpg",
@@ -67,6 +72,7 @@ const rooms = [
     name: "Standard Twin",
     price: 2400,
     guests: 2,
+    units: 4,
     bed: "2 single beds",
     size: 26,
     photo: "images/room-deluxe.jpg",
@@ -79,6 +85,7 @@ const rooms = [
     name: "Superior Room",
     price: 3200,
     guests: 2,
+    units: 3,
     bed: "1 queen bed",
     size: 30,
     photo: "images/room-premier.jpg",
@@ -91,6 +98,7 @@ const rooms = [
     name: "Garden View Room",
     price: 4200,
     guests: 3,
+    units: 3,
     bed: "1 queen bed, 1 single bed",
     size: 34,
     photo: "images/room-classic.jpg",
@@ -103,6 +111,7 @@ const rooms = [
     name: "Family Room",
     price: 4800,
     guests: 4,
+    units: 3,
     bed: "2 queen beds",
     size: 44,
     photo: "images/room-deluxe.jpg",
@@ -115,6 +124,7 @@ const rooms = [
     name: "Executive Suite",
     price: 6500,
     guests: 3,
+    units: 2,
     bed: "1 king bed",
     size: 48,
     photo: "images/room-premier.jpg",
@@ -127,6 +137,7 @@ const rooms = [
     name: "Family Suite",
     price: 7200,
     guests: 5,
+    units: 2,
     bed: "1 king bed, 2 single beds",
     size: 60,
     photo: "images/room-classic.jpg",

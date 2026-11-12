@@ -13,10 +13,27 @@
         <p class="auth-sub">A little comfort starts here.</p>
         <form id="register-form" novalidate>
           <div class="form-error" id="form-error" role="alert"></div>
-          <div class="field">
-            <label for="fullname">Full name</label>
-            <input id="fullname" autocomplete="name" aria-describedby="fullname-error" />
-            <small class="error" id="fullname-error"></small>
+          <div class="two">
+            <div class="field">
+              <label for="firstname">First name</label>
+              <input
+                id="firstname"
+                autocomplete="given-name"
+                maxlength="50"
+                aria-describedby="firstname-error"
+              />
+              <small class="error" id="firstname-error"></small>
+            </div>
+            <div class="field">
+              <label for="lastname">Last name</label>
+              <input
+                id="lastname"
+                autocomplete="family-name"
+                maxlength="50"
+                aria-describedby="lastname-error"
+              />
+              <small class="error" id="lastname-error"></small>
+            </div>
           </div>
           <div class="field">
             <label for="email">Email address</label>
@@ -42,6 +59,25 @@
             </div>
             <small class="hint" id="password-hint">At least 8 characters.</small>
             <small class="error" id="password-error"></small>
+          </div>
+          <div class="field">
+            <label for="password2">Re-enter password</label>
+            <div class="pw-wrap">
+              <input
+                id="password2"
+                type="password"
+                autocomplete="new-password"
+                aria-describedby="password2-error"
+              /><button
+                type="button"
+                class="pw-toggle"
+                data-for="password2"
+                aria-label="Show or hide re-entered password"
+              >
+                Show
+              </button>
+            </div>
+            <small class="error" id="password2-error"></small>
           </div>
           <button class="btn block" type="submit">Create Account</button>
         </form>

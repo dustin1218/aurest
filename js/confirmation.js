@@ -11,23 +11,25 @@ else showConfirmation(cBooking);
 
 function showConfirmation(b) {
   const r = getRooms().find((x) => x.id === b.roomId); // the room may have been deleted since, so fall back to what the booking saved
-  const n = nightsBetween(b.checkin, b.checkout);
+  const n = nightsBetween(b.checkin, b.checkout),
+    qty = roomQty(b);
   const total = bookingTotal(b);
-  const rate = r ? r.price : Math.round(total / n);
+  const rate = b.nightlyRate || (r ? r.price : Math.round(total / n / qty)); // per room, per night
 
   document.title = `Confirmation ${b.id} | AUREST`;
   $("#c-ref").textContent = b.id;
   $("#c-status").innerHTML = statusChip(b.status);
   $("#c-img").src = r ? r.photo : "images/room-classic.jpg";
   $("#c-img").alt = b.roomName;
-  $("#c-room").textContent = b.roomName;
-  $("#c-meta").textContent = r ? `${r.bed} · ${r.size} m² · ${r.guests} guests` : "";
+  $("#c-room").textContent = qty > 1 ? `${b.roomName} × ${qty}` : b.roomName;
+  $("#c-meta").textContent = r ? `${r.bed} · ${r.size} m² · ${r.guests} guests per room` : "";
   $("#c-in").textContent = fmtDate(b.checkin);
   $("#c-out").textContent = fmtDate(b.checkout);
   $("#c-guests").textContent = b.children
     ? `${plural(b.adults, "adult")}, ${plural(b.children, "child", "children")}`
     : plural(b.guests, "guest");
-  $("#c-calc").textContent = `${peso(rate)} × ${plural(n, "night")}`;
+  $("#c-calc").textContent =
+    `${peso(rate)} × ${plural(n, "night")}` + (qty > 1 ? ` × ${plural(qty, "room")}` : "");
   $("#c-sub").textContent = $("#c-total").textContent = peso(total);
 
   // The headline matches the booking's real status, so the page never promises more than the hotel has agreed to.
@@ -48,7 +50,7 @@ function showConfirmation(b) {
   const due = Math.max(0, (b.paymentPlan === "full" ? money.total : money.total * 0.3) - money.net);
   const nextStep =
     b.status === "Pending" && due > 0
-      ? ` Next step: transfer ${peso(due)} to ${hotelInfo.payTo}, then submit the reference in My bookings.`
+      ? ` Next step: transfer ${peso(due)} to ${hotelInfo.payTo}, then submit the reference or a receipt photo in My bookings.`
       : "";
   $("#c-note").textContent = note + nextStep + " " + paymentSummary(b);
   if (b.status === "Pending") $("#c-title").textContent = "Reservation received.";

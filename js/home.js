@@ -1,14 +1,22 @@
 // ----- Guests and rooms picker -----
 const s0 = getSearch();
-const party = { adults: s0.adults, children: s0.children, rooms: s0.rooms, pets: s0.pets };
+const party = {
+  adults: Math.max(1, +s0.adults || 1),
+  children: Math.max(0, +s0.children || 0),
+  rooms: Math.max(1, +s0.rooms || 1),
+  pets: !!s0.pets,
+};
 const toggle = $("#picker-toggle"),
   panel = $("#picker-panel");
+// There is no fixed maximum. Availability and room capacity are checked when the search runs.
+const countFor = (s, v) => Math.max(+s.dataset.min, Math.floor(+v) || 0);
 function updateGuests() {
-  ["adults", "children", "rooms"].forEach((k) => ($("#val-" + k).textContent = party[k]));
+  ["adults", "children", "rooms"].forEach((k) => {
+    const input = $("#val-" + k);
+    if (document.activeElement !== input || +input.value !== party[k]) input.value = party[k];
+  });
   $$(".stepper").forEach((s) => {
-    const v = party[s.dataset.key];
-    s.querySelector('[data-step="-1"]').disabled = v <= +s.dataset.min;
-    s.querySelector('[data-step="1"]').disabled = v >= +s.dataset.max;
+    s.querySelector('[data-step="-1"]').disabled = party[s.dataset.key] <= +s.dataset.min;
   });
   $("#picker-summary").textContent =
     `${plural(party.adults, "adult")} · ${plural(party.children, "child", "children")} · ${plural(party.rooms, "room")}` +
@@ -32,15 +40,27 @@ document.addEventListener("keydown", (e) => {
     toggle.focus();
   }
 });
-$$(".stepper").forEach((s) =>
+$$(".stepper").forEach((s) => {
+  const k = s.dataset.key,
+    input = $("input", s);
   s.addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b) return;
-    const k = s.dataset.key;
-    party[k] = Math.min(+s.dataset.max, Math.max(+s.dataset.min, party[k] + +b.dataset.step));
+    party[k] = countFor(s, party[k] + +b.dataset.step);
     updateGuests();
-  }),
-);
+  });
+  // Typing a number works too; an empty or invalid entry falls back to the lowest allowed value.
+  input.addEventListener("input", () => {
+    if (input.value === "") return;
+    party[k] = countFor(s, input.value);
+    updateGuests();
+  });
+  input.addEventListener("change", () => {
+    party[k] = countFor(s, input.value);
+    input.value = party[k];
+    updateGuests();
+  });
+});
 $("#pets").checked = party.pets;
 $("#pets").addEventListener("change", (e) => {
   party.pets = e.target.checked;
@@ -90,7 +110,8 @@ form.addEventListener("submit", (e) => {
     store.set("aurest-search", found);
     applied = found;
     expanded = true;
-    cap.value = Math.min(4, Math.max(1, party.adults + party.children));
+    // Each room must hold its share of the group, so filter on guests per room.
+    cap.value = Math.min(4, Math.ceil((party.adults + party.children) / party.rooms));
     drawRooms();
     $("#rooms").scrollIntoView({ behavior: "smooth" });
   }
@@ -106,23 +127,29 @@ let expanded = false,
   applied = null;
 
 function drawRooms() {
-  // After a date search, only offer rooms that are actually free for that stay.
-  let list = getRooms().filter(
-    (r) =>
-      r.guests >= +cap.value && (!applied || available(r.id, applied.checkin, applied.checkout)),
-  );
+  // After a date search, only offer room types with enough free rooms for the whole stay,
+  // whose combined capacity fits the group.
+  const free = {};
+  let list = getRooms().filter((r) => {
+    if (r.guests < +cap.value) return false;
+    if (!applied) return true;
+    free[r.id] = roomsFree(r.id, applied.checkin, applied.checkout);
+    return (
+      free[r.id] >= applied.rooms && r.guests * applied.rooms >= applied.adults + applied.children
+    );
+  });
   if (sort.value === "low") list.sort((a, b) => a.price - b.price);
   if (sort.value === "high") list.sort((a, b) => b.price - a.price);
   const shown = expanded ? list : list.slice(0, FEATURED);
   gallery.innerHTML = shown.length
-    ? shown.map(roomCard).join("")
-    : `<div class="empty"><h3>${applied ? "No rooms are free for that stay" : `No rooms fit ${cap.value} guests`}</h3><p>${applied ? "Try different dates or fewer guests." : "Try fewer guests or clear your filters."}</p><button class="btn" type="button" id="reset">Show all rooms</button></div>`;
+    ? shown.map((r) => roomCard(r, applied ? `${free[r.id]} left` : "")).join("")
+    : `<div class="empty"><h3>${applied ? "No rooms are free for that stay" : `No rooms fit ${cap.value} guests`}</h3><p>${applied ? "Try different dates, fewer guests or more rooms." : "Try fewer guests or clear your filters."}</p><button class="btn" type="button" id="reset">Show all rooms</button></div>`;
   $("#count").textContent = shown.length
     ? `Showing ${shown.length} of ${plural(list.length, "room")}`
     : "";
   $("#filters").hidden = !expanded;
   $("#chip-box").innerHTML = applied
-    ? `<span class="chip">${fmtDate(applied.checkin)} – ${fmtDate(applied.checkout)} · ${plural(applied.adults + applied.children, "guest")}<button type="button" id="clear" aria-label="Clear search">✕</button></span>`
+    ? `<span class="chip">${fmtDate(applied.checkin)} – ${fmtDate(applied.checkout)} · ${plural(applied.adults + applied.children, "guest")} · ${plural(applied.rooms, "room")}<button type="button" id="clear" aria-label="Clear search">✕</button></span>`
     : "";
   more.hidden = !expanded && list.length <= FEATURED;
   more.textContent = expanded
@@ -170,7 +197,7 @@ const contactRules = {
   email: () =>
     !cf.email.value.trim()
       ? "Please enter your email."
-      : /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cf.email.value.trim())
+      : EMAIL_RE.test(cf.email.value.trim())
         ? ""
         : "Please enter a valid email address.",
   message: () =>

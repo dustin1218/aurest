@@ -39,3 +39,23 @@ if(moneyFor(b).net!==0)throw Error('Refund ledger');
 console.log(
   "PASS: unverified payments, deposit balances, early/late cancellations, refund queue, duplicate refunds, completed refunds",
 );
+
+// Room types with several rooms: count free rooms on the busiest night of the stay.
+context.getAllRooms = () => [{ id: "r", price: 1000, units: 3 }];
+context.allBookings = () => [
+  { id: "a", roomId: "r", checkin: "2099-01-01", checkout: "2099-01-04", rooms: 2, status: "Pending" },
+  { id: "c", roomId: "r", checkin: "2099-01-02", checkout: "2099-01-03", rooms: 1, status: "Cancelled" },
+  { id: "d", roomId: "r", checkin: "2099-01-03", checkout: "2099-01-05", status: "Confirmed" },
+];
+vm.runInContext(
+  `
+if(roomsFree('r','2099-01-01','2099-01-02')!==1)throw Error('One booking holding 2 of 3 rooms');
+if(roomsFree('r','2099-01-01','2099-01-05')!==0)throw Error('Busiest night decides');
+if(roomsFree('r','2099-01-04','2099-01-06')!==2)throw Error('Check-out day is free');
+if(roomsFree('r','2099-01-01','2099-01-05','a')!==2)throw Error('Excluded booking (rescheduling)');
+if(!available('r','2099-01-01','2099-01-02',undefined,1)||available('r','2099-01-01','2099-01-02',undefined,2))throw Error('Requested quantity');
+if(bookingTotal({roomId:'r',checkin:'2099-01-01',checkout:'2099-01-03',rooms:2})!==4000)throw Error('Multi-room total');
+`,
+  context,
+);
+console.log("PASS: free rooms per type, cancelled stays ignored, check-out day, multi-room totals");
